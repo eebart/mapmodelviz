@@ -1,36 +1,36 @@
 [{
-    "name" : "Drenthe",
-    "regioFacetId" : "tcm:106-353397-1024",
+  "name" : "Drenthe",
+  "regioFacetId" : "tcm:106-353397-1024",
   "value" : 5
 },
 {
-    "name" : "Flevoland",
-    "regioFacetId" : "tcm:106-353410-1024",
+  "name" : "Flevoland",
+  "regioFacetId" : "tcm:106-353410-1024",
   "value" : 5
 },
 {
-    "name" : "Friesland (Fryslân)",
-    "regioFacetId" : "tcm:106-353417-1024",
+  "name" : "Friesland (Fryslân)",
+  "regioFacetId" : "tcm:106-353417-1024",
   "value" : 4
 },
 {
-    "name" : "Gelderland",
-    "regioFacetId" : "tcm:106-353445-1024",
+  "name" : "Gelderland",
+  "regioFacetId" : "tcm:106-353445-1024",
   "value" : 4
 },
 {
-    "name" : "Groningen",
-    "regioFacetId" : "tcm:106-353502-1024",
+  "name" : "Groningen",
+  "regioFacetId" : "tcm:106-353502-1024",
   "value" : 4
 },
 {
-    "name" : "Limburg",
-    "regioFacetId" : "tcm:106-353526-1024",
+  "name" : "Limburg",
+  "regioFacetId" : "tcm:106-353526-1024",
   "value" : 1
 },
 {
-    "name" : "Noord-Brabant",
-    "regioFacetId" : "tcm:106-353560-1024",
+  "name" : "Noord-Brabant",
+  "regioFacetId" : "tcm:106-353560-1024",
   "value" : 2
 },
 {
@@ -39,22 +39,22 @@
   "value" : 3
 },
 {
-    "name" : "Overijssel",
-    "regioFacetId" : "tcm:106-353682-1024",
+  "name" : "Overijssel",
+  "regioFacetId" : "tcm:106-353682-1024",
   "value" : 2
 },
 {
-    "name" : "Utrecht",
-    "regioFacetId" : "tcm:106-353708-1024",
+  "name" : "Utrecht",
+  "regioFacetId" : "tcm:106-353708-1024",
   "value" : 3
 },
 {
-    "name" : "Zeeland",
-    "regioFacetId" : "tcm:106-353735-1024",
+  "name" : "Zeeland",
+  "regioFacetId" : "tcm:106-353735-1024",
   "value" : 2
 },
 {
-    "name" : "Zuid-Holland",
-    "regioFacetId" : "tcm:106-353749-1024",
+  "name" : "Zuid-Holland",
+  "regioFacetId" : "tcm:106-353749-1024",
   "value" : 2
 }]

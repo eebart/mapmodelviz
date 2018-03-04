@@ -16,6 +16,14 @@ exports.files = {
   }
 };
 
+// exports.overrides = {
+//   production: {
+//     optimize: true,
+//     sourceMaps: false,
+//     plugins: {autoReload: {enabled: false}}
+//   }
+// };
+
 exports.plugins = {
   babel: {
     presets: ['latest']
@@ -31,7 +39,7 @@ exports.plugins = {
 exports.npm = {
   globals: {
     $: 'jquery',
-    jQuery: 'jquery',
-    Tether: 'tether'
+    jQuery: 'jquery'
+    // Tether: 'tether'
   }
 }
