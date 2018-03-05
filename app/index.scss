@@ -6,6 +6,13 @@
 
 // here go's the rest
 @import './scss/_variables';
+@import './scss/settings';
+
+.centered-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .main {
   height: 100vh;
@@ -103,20 +110,14 @@
     }
 
     .center-message {
-      height: 100%;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width:100%;
+      height:100%;
+      @extend .centered-content;
     }
 
     #region-selected {
       padding: 10px;
     }
-  }
-  
-  .settings {
-    height:30%;
   }
 
   .full-col {

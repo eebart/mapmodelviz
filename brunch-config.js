@@ -26,7 +26,7 @@ exports.files = {
 
 exports.plugins = {
   babel: {
-    presets: ['latest']
+    presets: ['env']
   },
   sass: {
     options: {
@@ -39,7 +39,7 @@ exports.plugins = {
 exports.npm = {
   globals: {
     $: 'jquery',
-    jQuery: 'jquery'
-    // Tether: 'tether'
+    jQuery: 'jquery',
+    Tether: 'tether',
   }
 }

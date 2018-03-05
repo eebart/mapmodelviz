@@ -38,15 +38,37 @@ var hoverStyle = new ol.style.Style({
   })
 });
 
+var updateMapData = function() {
+  util.findChoroplethMinMax(modelConfig);
+  util.setChoroplethBuckets(modelConfig);
+  util.buildChoroplethLegend(modelConfig);
+
+  addGeoJSONLayer();
+};
+
+var setNewActivePolicy = function(newPolicyName) {
+  modelConfig.selectedPolicy = newPolicyName;
+  modelConfig.jsonData.forEach(function(policy) {
+    if (policy.name = newPolicyName) {
+      modelConfig.geoAreaId = policy.geoAreaId;
+      modelConfig.mappedProperty = policy.mappedProperty;
+    }
+  });
+}
+
 var getFillColor = function(feature) {
   var choroplethNum = 0;
   var id = feature.get(modelConfig.geoAreaId);
-  for (var key in modelConfig.jsonData) {
-    if (modelConfig.jsonData[key][modelConfig.geoAreaId] == id) {
-      choroplethNum = modelConfig.jsonData[key]['choroplethNum'];
-      break;
+  modelConfig.jsonData.forEach(function(policy) {
+    if (policy.name = modelConfig.selectedPolicy) {
+      for (var key in policy.data) {
+        if (policy.data[key][modelConfig.geoAreaId] == id) {
+          choroplethNum = policy.data[key]['choroplethNum'];
+          break;
+        }
+      }
     }
-  }
+  });
   choroplethNum = choroplethNum ? choroplethNum : 0;
   var hex = modelConfig.choropleth[choroplethNum];
   return util.hexToRgb(hex);
@@ -73,10 +95,26 @@ var hoveredStyleFunction = function(feature) {
 
 // Map Sources: http://josm.openstreetmap.de/wiki/Maps, http://leaflet-extras.github.io/leaflet-providers/preview/index.html, http://services.arcgisonline.com/arcgis/rest/services
 
+
+var geoJSONLayer = null;
+var featureOverlay = null;
+var hoverOverlay = null;
+
 var addGeoJSONLayer = function() {
+  // Clean up layers if they exist. For changing settings or choropleth.
+  if (geoJSONLayer !== null) {
+    modelConfig.map.removeLayer(geoJSONLayer);
+  }
+  if (featureOverlay !== null) {
+    modelConfig.map.removeLayer(featureOverlay);
+  }
+  if (hoverOverlay !== null) {
+    modelConfig.map.removeLayer(hoverOverlay);
+  }
+
   // Alternate way to read geoJSON files
-  $.getJSON( modelConfig.geoJson, function( json ) {
-    console.log('successfully loaded GeoJSON');
+  $.getJSON( modelConfig.geoJsonFile.name, function( json ) {
+    // console.log('successfully loaded GeoJSON');
   })
   .done(function( json ) {
     $("[id=no-region-selected]").show();
@@ -85,20 +123,20 @@ var addGeoJSONLayer = function() {
     var vectorSource = new ol.source.Vector({
       features: (new ol.format.GeoJSON()).readFeatures(json,{ featureProjection: 'EPSG:3857' })
     });
-    var vectorLayer = new ol.layer.Vector({
+    geoJSONLayer = new ol.layer.Vector({
       source: vectorSource,
       // map: map,
       style: styleFunction
     });
-    modelConfig.map.addLayer(vectorLayer);
+    modelConfig.map.addLayer(geoJSONLayer);
     modelConfig.map.getView().fit(vectorSource.getExtent(), (modelConfig.map.getSize()));
 
-    var featureOverlay = new ol.layer.Vector({
+    featureOverlay = new ol.layer.Vector({
       source: new ol.source.Vector(),
       map: modelConfig.map,
       style: highlightStyleFunction
     });
-    var hoverOverlay = new ol.layer.Vector({
+    hoverOverlay = new ol.layer.Vector({
       source: new ol.source.Vector(),
       map: modelConfig.map,
       style: hoveredStyleFunction
@@ -168,5 +206,7 @@ var displayFeatureDetails = function(feature) {
 };
 
 module.exports = {
-  addGeoJSONLayer: addGeoJSONLayer
+  addGeoJSONLayer: addGeoJSONLayer,
+  updateMapData: updateMapData,
+  setNewActivePolicy: setNewActivePolicy
 }

@@ -10,15 +10,18 @@ var hexToRgb = function(hex) {
 var findChoroplethMinMax = function(modelConfig) {
   var min = Infinity;
   var max = -Infinity;
-  for (var key in modelConfig.jsonData) {
-    if (modelConfig.jsonData[key][modelConfig.mappedProperty] < min) {
-      min = modelConfig.jsonData[key][modelConfig.mappedProperty];
+  modelConfig.jsonData.forEach(function(policy) {
+    if (policy.name = modelConfig.selectedPolicy) {
+      for (var key in policy.data) {
+        if (policy.data[key][modelConfig.mappedProperty] < min) {
+          min = policy.data[key][modelConfig.mappedProperty];
+        }
+        if (policy.data[key][modelConfig.mappedProperty] > max) {
+          max = policy.data[key][modelConfig.mappedProperty];
+        }
+      }
     }
-    if (modelConfig.jsonData[key][modelConfig.mappedProperty] > max) {
-      max = modelConfig.jsonData[key][modelConfig.mappedProperty];
-    }
-  }
-
+  });
   modelConfig.choroplethDetails.min = min;
   modelConfig.choroplethDetails.max = max;
 }
@@ -34,14 +37,18 @@ var setChoroplethBuckets = function(modelConfig) {
   }
   modelConfig.choroplethRanges[i] = modelConfig.choroplethDetails.max;
 
-  for (var key in modelConfig.jsonData) {
-    var choroplethNum = numColors - 1;
-    var value = modelConfig.jsonData[key][modelConfig.mappedProperty];
-    if (value !== modelConfig.choroplethDetails.max) {
-      choroplethNum = Math.floor((value - modelConfig.choroplethDetails.min)/intervalSize);
+  modelConfig.jsonData.forEach(function(policy) {
+    if (policy.name = modelConfig.selectedPolicy) {
+      for (var key in policy.data) {
+        var choroplethNum = numColors - 1;
+        var value = policy.data[key][modelConfig.mappedProperty];
+        if (value !== modelConfig.choroplethDetails.max) {
+          choroplethNum = Math.floor((value - modelConfig.choroplethDetails.min)/intervalSize);
+        }
+        policy.data[key]['choroplethNum'] = choroplethNum;
+      }
     }
-    modelConfig.jsonData[key]['choroplethNum'] = choroplethNum;
-  }
+  });
 };
 
 var buildChoroplethLegend = function(modelConfig) {

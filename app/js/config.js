@@ -1,9 +1,8 @@
 const colors = require('./colors.js');
 
 var modelConfig =  {
-  modelName: 'Model Name Here',
+  modelName: '',
 
-  geoJson: 'provinces.geojson',
 
   choropleth: colors.GnBu[5],
   choroplethDetails: {
@@ -12,10 +11,13 @@ var modelConfig =  {
   },
   choroplethRanges: [],
 
-  jsonFileName: 'dummydata.json',
-  jsonData: null,
-  geoAreaId: 'regioFacetId',
-  mappedProperty: 'value',
+  geoJsonFile: {
+    name: 'provinces.geojson'
+  },
+  jsonData: [],
+  selectedPolicy: '',
+  geoAreaId: '',
+  mappedProperty: '',
 
   map: null
 };

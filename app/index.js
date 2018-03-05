@@ -4,9 +4,12 @@
 // adds all custom Bootstrap jQuery plugins
 // see all plugins here: http://getbootstrap.com/javascript/
 
+import 'bootstrap';
+
 var modelConfig = require('./js/config.js');
 var mapping = require('./js/map.js');
 var util = require('./js/util.js');
+var settings = require('./js/settings.js');
 
 document.addEventListener('DOMContentLoaded', () => {
   // do your setup here
@@ -33,20 +36,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   util.buildChoroplethLegend(modelConfig);
 
-  $.getJSON(modelConfig.jsonFileName, function(json) {
-    modelConfig.jsonData = json;
+  //TODO remove this loading to support dynamic data.
+  var jsonFileName = 'dummydata.json';
+  $.getJSON(jsonFileName, function(json) {
+    modelConfig.jsonData.push({
+      name: 'Policy A',
+      data: json,
+      file: {
+        name: jsonFileName
+      },
+      geoAreaId: 'regioFacetId',
+      mappedProperty: 'value'
+    });
+    mapping.setNewActivePolicy('Policy A');
   })
   .done(function() {
     util.findChoroplethMinMax(modelConfig);
     util.setChoroplethBuckets(modelConfig);
     util.buildChoroplethLegend(modelConfig);
 
-    mapping.addGeoJSONLayer();
+    mapping.addGeoJSONLayer(); //TODO remove for production
   })
   .fail(function(err) {
     console.error( "error loading model data: " + err );
   })
 
-  $("[id=model-name]").html(modelConfig.modelName);
-
+  settings.loadSettings(modelConfig, mapping);
 });
