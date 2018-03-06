@@ -10,6 +10,7 @@ var modelConfig = require('./js/config.js');
 var mapping = require('./js/map.js');
 var util = require('./js/util.js');
 var settings = require('./js/settings.js');
+var details = require('./js/details.js')
 
 document.addEventListener('DOMContentLoaded', () => {
   // do your setup here
@@ -30,10 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
       new ol.View({center : ol.proj.fromLonLat([ 0,0 ]), zoom : 7})
   });
 
-  $("[id=no-json-loaded]").show();
-  $("[id=no-region-selected]").hide();
-  $("[id=region-selected]").hide();
-
   util.buildChoroplethLegend(modelConfig);
 
   //TODO remove this loading to support dynamic data.
@@ -51,15 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
     mapping.setNewActivePolicy('Policy A');
   })
   .done(function() {
-    util.findChoroplethMinMax(modelConfig);
-    util.setChoroplethBuckets(modelConfig);
-    util.buildChoroplethLegend(modelConfig);
-
-    mapping.addGeoJSONLayer(); //TODO remove for production
+    mapping.updateMapData();
   })
   .fail(function(err) {
     console.error( "error loading model data: " + err );
   })
 
-  settings.loadSettings(modelConfig, mapping);
+  settings.loadSettings();
+  details.loadDetails();
 });

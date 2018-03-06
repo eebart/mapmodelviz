@@ -1,13 +1,11 @@
 var colors = require('./colors.js')
+var modelConfig = require('./config.js');
+var mapping = require('./map.js');
 
 var newPolicies = [];
-var modelConfig = null;
-var mapping = null;
+var pendingActivePolicy = '';
 
-var loadSettings = function(config, mappingMethods) {
-  modelConfig = config;
-  mapping = mappingMethods;
-
+var loadSettings = function() {
   $("#settings-content").load("settings.html", function() {
 
     displayCurrentChoropleth(modelConfig.choropleth);
@@ -23,18 +21,18 @@ var loadSettings = function(config, mappingMethods) {
 
     $("#name-popup").load("nameSelector.html", function() {
       $("[id=name-change-save]").click(function() {
-        saveModelName(modelConfig);
+        saveModelName();
       });
     });
     $("#color-popup").load("colorSelector.html", function() {
-      buildChoroplethSelection(modelConfig);
+      buildChoroplethSelection();
 
       $("[id=color-number-dropdown]").change(function() {
-        buildChoroplethSelection(modelConfig);
+        buildChoroplethSelection();
       });
 
       $("[id=choropleth-change-save]").click(function() {
-        saveChoroplethSelection(modelConfig, mapping);
+        saveChoroplethSelection();
       });
     });
     $("#model-popup").load("modelSelector.html", function() {
@@ -43,19 +41,23 @@ var loadSettings = function(config, mappingMethods) {
       });
 
       $("[id=new-policy-button]").click(function() {
-        addNewPolicy(modelConfig);
+        addNewPolicy();
       });
 
       $("[id=policy-data-save]").click(function() {
-        addNewPolicy(modelConfig);
+        updateMapPolicies();
       });
     });
 
     $("[id=manage-policies]").click(function() {
       buildModelDataDisplay(modelConfig.jsonData, modelConfig.selectedPolicy);
+
+      $('#policy-row-add').on('click', 'tr', function(){
+        setNewActivePolicy(this);
+      });
     });
     $("[id=change-color-button]").click(function() {
-      buildChoroplethSelection(modelConfig);
+      buildChoroplethSelection();
     });
   });
 };
@@ -67,7 +69,7 @@ var displayModelName = function(modelName) {
   }
   $("#model-name").html(modelName);
 };
-var saveModelName = function(modelConfig) {
+var saveModelName = function() {
   var modelName = $("[id=new_model_name]")[0].value;
   modelConfig.modelName = modelName;
   displayModelName(modelName);
@@ -82,6 +84,7 @@ var displayActivePolicy = function(activePolicy) {
 };
 var buildModelDataDisplay = function(jsonData, activePolicy) {
   newPolicies = [];
+  pendingActivePolicy = '';
   $("#policy-row-add tr").remove();
 
   if (jsonData.length == 0) {
@@ -109,7 +112,7 @@ var buildNewRow = function(policy, isActive) {
   divContent += '</tr>';
   $("#policy-row-add").append(divContent);
 };
-var addNewPolicy = function(modelConfig) {
+var addNewPolicy = function() {
   var newPolicy = {
     name: $("[id=new_policy_name]")[0].value,
     data: null,
@@ -120,27 +123,36 @@ var addNewPolicy = function(modelConfig) {
   newPolicies.push(newPolicy);
   buildNewRow(newPolicy, false);
 };
-var updateMapPolicies = function(modelConfig) {
-  if (newPolicies.length === 0) {
-    return;
+var setNewActivePolicy = function(row) {
+  $(row).addClass('table-primary').siblings().removeClass('table-primary');
+  pendingActivePolicy = row.children[0].innerText;
+};
+var updateMapPolicies = function() {
+  if (newPolicies.length !== 0) {
+    modelConfig.jsonData.push(newPolicies);
   }
-  modelConfig.jsonData.push(newPolicies);
+  if (pendingActivePolicy !== '' && modelConfig.selectedPolicy !== pendingActivePolicy) {
+    modelConfig.selectedPolicy = pendingActivePolicy;
+    displayActivePolicy(modelConfig.selectedPolicy);
 
-  modelConfig.jsonData.forEach(function(dataset){
-    if (dataset.name === modelConfig.selectedPolicy) {
-      $.getJSON(dataset.file.name, function(json) {
-        dataset.data = json;
-      })
-      .done(function() {
-        mapping.updateMapData();
-      })
-      .fail(function(err) {
-        console.error( "error loading model data: " + err );
-      })
-    } else {
-      dataset.data = null;
-    }
-  });
+    modelConfig.jsonData.forEach(function(dataset){
+      if (dataset.name === modelConfig.selectedPolicy) {
+        modelConfig.geoAreaId = dataset.geoAreaId;
+        modelConfig.mappedProperty = dataset.mappedProperty;
+        $.getJSON(dataset.file.name, function(json) {
+          dataset.data = json;
+        })
+        .done(function() {
+          mapping.updateMapData();
+        })
+        .fail(function(err) {
+          console.error( "error loading model data: " + err );
+        })
+      } else {
+        dataset.data = null;
+      }
+    });
+  }
 };
 
 var displayCurrentChoropleth = function(currentChoropleth) {
@@ -149,7 +161,7 @@ var displayCurrentChoropleth = function(currentChoropleth) {
   divContent += '</div>';
   $("#current-color-settings").html(buildChoroplethDisplay(currentChoropleth));
 };
-var buildChoroplethSelection = function(modelConfig) {
+var buildChoroplethSelection = function() {
   $("#all-color-selection")[0].innerHTML = '';
 
   $("#current-color-selection").html(buildChoroplethDisplay(modelConfig.choropleth));
@@ -176,7 +188,7 @@ var buildChoroplethDisplay = function(choropleth) {
   divContent += '</div>';
   return divContent;
 };
-var saveChoroplethSelection = function(modelConfig, mapping) {
+var saveChoroplethSelection = function() {
   var colorName = $('input[name=choropleth-color-selector]:checked').val();
   var numColors = $('#color-number-dropdown')[0].value;
   modelConfig.choropleth = colors[colorName][numColors];

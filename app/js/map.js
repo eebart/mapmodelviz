@@ -1,5 +1,6 @@
 var modelConfig = require('./config.js');
-var util = require('./util.js')
+var util = require('./util.js');
+var details = require('./details.js');
 
 var standardStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
@@ -45,7 +46,6 @@ var updateMapData = function() {
 
   addGeoJSONLayer();
 };
-
 var setNewActivePolicy = function(newPolicyName) {
   modelConfig.selectedPolicy = newPolicyName;
   modelConfig.jsonData.forEach(function(policy) {
@@ -95,30 +95,19 @@ var hoveredStyleFunction = function(feature) {
 
 // Map Sources: http://josm.openstreetmap.de/wiki/Maps, http://leaflet-extras.github.io/leaflet-providers/preview/index.html, http://services.arcgisonline.com/arcgis/rest/services
 
-
-var geoJSONLayer = null;
-var featureOverlay = null;
-var hoverOverlay = null;
+var geoJSONLayer, featureOverlay, hoverOverlay;
+var highlight, hovered;
+var clickEvent, hoverEvent;
 
 var addGeoJSONLayer = function() {
-  // Clean up layers if they exist. For changing settings or choropleth.
-  if (geoJSONLayer !== null) {
-    modelConfig.map.removeLayer(geoJSONLayer);
-  }
-  if (featureOverlay !== null) {
-    modelConfig.map.removeLayer(featureOverlay);
-  }
-  if (hoverOverlay !== null) {
-    modelConfig.map.removeLayer(hoverOverlay);
-  }
+  resetMap();
 
   // Alternate way to read geoJSON files
   $.getJSON( modelConfig.geoJsonFile.name, function( json ) {
     // console.log('successfully loaded GeoJSON');
   })
   .done(function( json ) {
-    $("[id=no-region-selected]").show();
-    $("[id=no-json-loaded]").hide();
+    details.showJsonLoaded();
 
     var vectorSource = new ol.source.Vector({
       features: (new ol.format.GeoJSON()).readFeatures(json,{ featureProjection: 'EPSG:3857' })
@@ -142,67 +131,81 @@ var addGeoJSONLayer = function() {
       style: hoveredStyleFunction
     });
 
-    var highlight, hovered;
-    modelConfig.map.on('pointermove', function(evt) {
-      if (evt.dragging) {
-        return;
-      }
-      var pixel = modelConfig.map.getEventPixel(evt.originalEvent);
-      var feature = modelConfig.map.forEachFeatureAtPixel(pixel, function(feature) {
-        return feature;
-      });
-
-      if (feature !== hovered) {
-        if (hovered) {
-          hoverOverlay.getSource().removeFeature(hovered);
-        }
-        if (feature) {
-          hoverOverlay.getSource().addFeature(feature);
-        }
-        hovered = feature;
-      }
-    });
-    modelConfig.map.on('click', function(evt) {
-      var feature = modelConfig.map.forEachFeatureAtPixel(evt.pixel, function(feature) {
-        return feature;
-      });
-
-      if (feature) {
-        if (highlight) {
-          featureOverlay.getSource().removeFeature(highlight);
-        }
-        if (feature !== highlight) {
-          displayFeatureDetails(feature);
-          featureOverlay.getSource().addFeature(feature);
-          highlight = feature;
-        } else {
-          hideFeatureDetails();
-          highlight = null;
-        }
-      } else {
-        if (highlight) {
-          featureOverlay.getSource().removeFeature(highlight);
-          highlight = null;
-        }
-        hideFeatureDetails();
-      }
-    });
-  })
-  .fail(function(err) {
+    hoverEvent = modelConfig.map.on('pointermove', onMapHover);
+    clickEvent = modelConfig.map.on('click', onMapClick);
+  }).fail(function(err) {
     console.error( "Error rendering geojson map layer: " + err );
-  })
+  });
 };
 
-var hideFeatureDetails = function() {
-  $("[id=no-region-selected]").show();
-  $("[id=region-selected]").hide();
+var onMapHover = function(evt) {
+  if (evt.dragging) {
+    return;
+  }
+  var pixel = modelConfig.map.getEventPixel(evt.originalEvent);
+  var feature = modelConfig.map.forEachFeatureAtPixel(pixel, function(feature) {
+    return feature;
+  });
+
+  if (feature !== hovered) {
+    if (hovered) {
+      hoverOverlay.getSource().removeFeature(hovered);
+    }
+    if (feature) {
+      hoverOverlay.getSource().addFeature(feature);
+    }
+    hovered = feature;
+  }
 };
+var onMapClick = function(evt) {
+  var feature = modelConfig.map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+    return feature;
+  });
 
-var displayFeatureDetails = function(feature) {
-  $("[id=no-region-selected]").hide();
-
-  $("[id=region-name]").html(feature.get('name'));
-  $("[id=region-selected]").show();
+  if (feature) {
+    if (highlight) {
+      featureOverlay.getSource().removeFeature(highlight);
+    }
+    if (feature !== highlight) {
+      details.showFeatureDetails(feature);
+      featureOverlay.getSource().addFeature(feature);
+      highlight = feature;
+    } else {
+      details.hideFeatureDetails();
+      highlight = null;
+    }
+  } else {
+    if (highlight) {
+      featureOverlay.getSource().removeFeature(highlight);
+      highlight = null;
+    }
+    details.hideFeatureDetails();
+  }
+};
+var resetMap = function(evt) {
+  if (hovered) {
+    featureOverlay.getSource().removeFeature(hovered);
+    hovered = null;
+  }
+  if (highlight) {
+    featureOverlay.getSource().removeFeature(highlight);
+    highlight = null;
+  }
+  if (geoJSONLayer) {
+    modelConfig.map.removeLayer(geoJSONLayer);
+  }
+  if (featureOverlay) {
+    modelConfig.map.removeLayer(featureOverlay);
+  }
+  if (hoverOverlay) {
+    modelConfig.map.removeLayer(hoverOverlay);
+  }
+  if (hoverEvent) {
+    ol.Observable.unByKey(hoverEvent);
+  }
+  if (clickEvent) {
+    ol.Observable.unByKey(clickEvent);
+  }
 };
 
 module.exports = {

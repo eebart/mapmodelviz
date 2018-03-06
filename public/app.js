@@ -607,6 +607,7 @@ var modelConfig = require('./js/config.js'); //globals: $, jQuery and Tether, se
 var mapping = require('./js/map.js');
 var util = require('./js/util.js');
 var settings = require('./js/settings.js');
+var details = require('./js/details.js');
 
 document.addEventListener('DOMContentLoaded', function () {
   // do your setup here
@@ -624,10 +625,6 @@ document.addEventListener('DOMContentLoaded', function () {
     view: new ol.View({ center: ol.proj.fromLonLat([0, 0]), zoom: 7 })
   });
 
-  $("[id=no-json-loaded]").show();
-  $("[id=no-region-selected]").hide();
-  $("[id=region-selected]").hide();
-
   util.buildChoroplethLegend(modelConfig);
 
   //TODO remove this loading to support dynamic data.
@@ -644,16 +641,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     mapping.setNewActivePolicy('Policy A');
   }).done(function () {
-    util.findChoroplethMinMax(modelConfig);
-    util.setChoroplethBuckets(modelConfig);
-    util.buildChoroplethLegend(modelConfig);
-
-    mapping.addGeoJSONLayer(); //TODO remove for production
+    mapping.updateMapData();
   }).fail(function (err) {
     console.error("error loading model data: " + err);
   });
 
-  settings.loadSettings(modelConfig, mapping);
+  settings.loadSettings();
+  details.loadDetails();
 });
 });
 
@@ -690,11 +684,51 @@ var modelConfig = {
 module.exports = modelConfig;
 });
 
-require.register("js/map.js", function(exports, require, module) {
+require.register("js/details.js", function(exports, require, module) {
+'use strict';
+
+var modelConfig = require('./config.js');
+var charting = require('./charting.js');
+
+var loadDetails = function loadDetails() {
+  $("#details-content").load("details.html", function () {
+    $("[id=no-json-loaded]").show();
+    $("[id=no-region-selected]").hide();
+    $("[id=region-selected]").hide();
+  });
+};
+
+var showJsonLoaded = function showJsonLoaded() {
+  $("[id=no-region-selected]").show();
+  $("[id=no-json-loaded]").hide();
+};
+
+var hideFeatureDetails = function hideFeatureDetails() {
+  $("[id=no-region-selected]").show();
+  $("[id=region-selected]").hide();
+};
+
+var showFeatureDetails = function showFeatureDetails(feature) {
+  $("[id=no-region-selected]").hide();
+
+  $("[id=region-name]").html(feature.get('name'));
+  $("[id=region-selected]").show();
+};
+
+module.exports = {
+  loadDetails: loadDetails,
+  hideFeatureDetails: hideFeatureDetails,
+  showFeatureDetails: showFeatureDetails,
+  showJsonLoaded: showJsonLoaded
+};
+});
+
+;require.register("js/map.js", function(exports, require, module) {
 'use strict';
 
 var modelConfig = require('./config.js');
 var util = require('./util.js');
+var details = require('./details.js');
 
 var standardStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
@@ -740,7 +774,6 @@ var updateMapData = function updateMapData() {
 
   addGeoJSONLayer();
 };
-
 var setNewActivePolicy = function setNewActivePolicy(newPolicyName) {
   modelConfig.selectedPolicy = newPolicyName;
   modelConfig.jsonData.forEach(function (policy) {
@@ -790,29 +823,18 @@ var hoveredStyleFunction = function hoveredStyleFunction(feature) {
 
 // Map Sources: http://josm.openstreetmap.de/wiki/Maps, http://leaflet-extras.github.io/leaflet-providers/preview/index.html, http://services.arcgisonline.com/arcgis/rest/services
 
-
-var geoJSONLayer = null;
-var featureOverlay = null;
-var hoverOverlay = null;
+var geoJSONLayer, featureOverlay, hoverOverlay;
+var highlight, hovered;
+var clickEvent, hoverEvent;
 
 var addGeoJSONLayer = function addGeoJSONLayer() {
-  // Clean up layers if they exist. For changing settings or choropleth.
-  if (geoJSONLayer !== null) {
-    modelConfig.map.removeLayer(geoJSONLayer);
-  }
-  if (featureOverlay !== null) {
-    modelConfig.map.removeLayer(featureOverlay);
-  }
-  if (hoverOverlay !== null) {
-    modelConfig.map.removeLayer(hoverOverlay);
-  }
+  resetMap();
 
   // Alternate way to read geoJSON files
   $.getJSON(modelConfig.geoJsonFile.name, function (json) {
     // console.log('successfully loaded GeoJSON');
   }).done(function (json) {
-    $("[id=no-region-selected]").show();
-    $("[id=no-json-loaded]").hide();
+    details.showJsonLoaded();
 
     var vectorSource = new ol.source.Vector({
       features: new ol.format.GeoJSON().readFeatures(json, { featureProjection: 'EPSG:3857' })
@@ -836,66 +858,81 @@ var addGeoJSONLayer = function addGeoJSONLayer() {
       style: hoveredStyleFunction
     });
 
-    var highlight, hovered;
-    modelConfig.map.on('pointermove', function (evt) {
-      if (evt.dragging) {
-        return;
-      }
-      var pixel = modelConfig.map.getEventPixel(evt.originalEvent);
-      var feature = modelConfig.map.forEachFeatureAtPixel(pixel, function (feature) {
-        return feature;
-      });
-
-      if (feature !== hovered) {
-        if (hovered) {
-          hoverOverlay.getSource().removeFeature(hovered);
-        }
-        if (feature) {
-          hoverOverlay.getSource().addFeature(feature);
-        }
-        hovered = feature;
-      }
-    });
-    modelConfig.map.on('click', function (evt) {
-      var feature = modelConfig.map.forEachFeatureAtPixel(evt.pixel, function (feature) {
-        return feature;
-      });
-
-      if (feature) {
-        if (highlight) {
-          featureOverlay.getSource().removeFeature(highlight);
-        }
-        if (feature !== highlight) {
-          displayFeatureDetails(feature);
-          featureOverlay.getSource().addFeature(feature);
-          highlight = feature;
-        } else {
-          hideFeatureDetails();
-          highlight = null;
-        }
-      } else {
-        if (highlight) {
-          featureOverlay.getSource().removeFeature(highlight);
-          highlight = null;
-        }
-        hideFeatureDetails();
-      }
-    });
+    hoverEvent = modelConfig.map.on('pointermove', onMapHover);
+    clickEvent = modelConfig.map.on('click', onMapClick);
   }).fail(function (err) {
     console.error("Error rendering geojson map layer: " + err);
   });
 };
 
-var hideFeatureDetails = function hideFeatureDetails() {
-  $("[id=no-region-selected]").show();
-  $("[id=region-selected]").hide();
+var onMapHover = function onMapHover(evt) {
+  if (evt.dragging) {
+    return;
+  }
+  var pixel = modelConfig.map.getEventPixel(evt.originalEvent);
+  var feature = modelConfig.map.forEachFeatureAtPixel(pixel, function (feature) {
+    return feature;
+  });
+
+  if (feature !== hovered) {
+    if (hovered) {
+      hoverOverlay.getSource().removeFeature(hovered);
+    }
+    if (feature) {
+      hoverOverlay.getSource().addFeature(feature);
+    }
+    hovered = feature;
+  }
 };
+var onMapClick = function onMapClick(evt) {
+  var feature = modelConfig.map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+    return feature;
+  });
 
-var displayFeatureDetails = function displayFeatureDetails(feature) {
-  $("[id=no-region-selected]").hide();
-
-  $("[id=region-name]").html(feature.get('name'));
-  $("[id=region-selected]").show();
+  if (feature) {
+    if (highlight) {
+      featureOverlay.getSource().removeFeature(highlight);
+    }
+    if (feature !== highlight) {
+      details.showFeatureDetails(feature);
+      featureOverlay.getSource().addFeature(feature);
+      highlight = feature;
+    } else {
+      details.hideFeatureDetails();
+      highlight = null;
+    }
+  } else {
+    if (highlight) {
+      featureOverlay.getSource().removeFeature(highlight);
+      highlight = null;
+    }
+    details.hideFeatureDetails();
+  }
+};
+var resetMap = function resetMap(evt) {
+  if (hovered) {
+    featureOverlay.getSource().removeFeature(hovered);
+    hovered = null;
+  }
+  if (highlight) {
+    featureOverlay.getSource().removeFeature(highlight);
+    highlight = null;
+  }
+  if (geoJSONLayer) {
+    modelConfig.map.removeLayer(geoJSONLayer);
+  }
+  if (featureOverlay) {
+    modelConfig.map.removeLayer(featureOverlay);
+  }
+  if (hoverOverlay) {
+    modelConfig.map.removeLayer(hoverOverlay);
+  }
+  if (hoverEvent) {
+    ol.Observable.unByKey(hoverEvent);
+  }
+  if (clickEvent) {
+    ol.Observable.unByKey(clickEvent);
+  }
 };
 
 module.exports = {
@@ -906,18 +943,16 @@ module.exports = {
 });
 
 ;require.register("js/settings.js", function(exports, require, module) {
-"use strict";
+'use strict';
 
 var colors = require('./colors.js');
+var modelConfig = require('./config.js');
+var mapping = require('./map.js');
 
 var newPolicies = [];
-var modelConfig = null;
-var mapping = null;
+var pendingActivePolicy = '';
 
-var loadSettings = function loadSettings(config, mappingMethods) {
-  modelConfig = config;
-  mapping = mappingMethods;
-
+var loadSettings = function loadSettings() {
   $("#settings-content").load("settings.html", function () {
 
     displayCurrentChoropleth(modelConfig.choropleth);
@@ -933,18 +968,18 @@ var loadSettings = function loadSettings(config, mappingMethods) {
 
     $("#name-popup").load("nameSelector.html", function () {
       $("[id=name-change-save]").click(function () {
-        saveModelName(modelConfig);
+        saveModelName();
       });
     });
     $("#color-popup").load("colorSelector.html", function () {
-      buildChoroplethSelection(modelConfig);
+      buildChoroplethSelection();
 
       $("[id=color-number-dropdown]").change(function () {
-        buildChoroplethSelection(modelConfig);
+        buildChoroplethSelection();
       });
 
       $("[id=choropleth-change-save]").click(function () {
-        saveChoroplethSelection(modelConfig, mapping);
+        saveChoroplethSelection();
       });
     });
     $("#model-popup").load("modelSelector.html", function () {
@@ -953,19 +988,23 @@ var loadSettings = function loadSettings(config, mappingMethods) {
       });
 
       $("[id=new-policy-button]").click(function () {
-        addNewPolicy(modelConfig);
+        addNewPolicy();
       });
 
       $("[id=policy-data-save]").click(function () {
-        addNewPolicy(modelConfig);
+        updateMapPolicies();
       });
     });
 
     $("[id=manage-policies]").click(function () {
       buildModelDataDisplay(modelConfig.jsonData, modelConfig.selectedPolicy);
+
+      $('#policy-row-add').on('click', 'tr', function () {
+        setNewActivePolicy(this);
+      });
     });
     $("[id=change-color-button]").click(function () {
-      buildChoroplethSelection(modelConfig);
+      buildChoroplethSelection();
     });
   });
 };
@@ -977,7 +1016,7 @@ var displayModelName = function displayModelName(modelName) {
   }
   $("#model-name").html(modelName);
 };
-var saveModelName = function saveModelName(modelConfig) {
+var saveModelName = function saveModelName() {
   var modelName = $("[id=new_model_name]")[0].value;
   modelConfig.modelName = modelName;
   displayModelName(modelName);
@@ -992,6 +1031,7 @@ var displayActivePolicy = function displayActivePolicy(activePolicy) {
 };
 var buildModelDataDisplay = function buildModelDataDisplay(jsonData, activePolicy) {
   newPolicies = [];
+  pendingActivePolicy = '';
   $("#policy-row-add tr").remove();
 
   if (jsonData.length == 0) {
@@ -1019,7 +1059,7 @@ var buildNewRow = function buildNewRow(policy, isActive) {
   divContent += '</tr>';
   $("#policy-row-add").append(divContent);
 };
-var addNewPolicy = function addNewPolicy(modelConfig) {
+var addNewPolicy = function addNewPolicy() {
   var newPolicy = {
     name: $("[id=new_policy_name]")[0].value,
     data: null,
@@ -1030,25 +1070,34 @@ var addNewPolicy = function addNewPolicy(modelConfig) {
   newPolicies.push(newPolicy);
   buildNewRow(newPolicy, false);
 };
-var updateMapPolicies = function updateMapPolicies(modelConfig) {
-  if (newPolicies.length === 0) {
-    return;
+var setNewActivePolicy = function setNewActivePolicy(row) {
+  $(row).addClass('table-primary').siblings().removeClass('table-primary');
+  pendingActivePolicy = row.children[0].innerText;
+};
+var updateMapPolicies = function updateMapPolicies() {
+  if (newPolicies.length !== 0) {
+    modelConfig.jsonData.push(newPolicies);
   }
-  modelConfig.jsonData.push(newPolicies);
+  if (pendingActivePolicy !== '' && modelConfig.selectedPolicy !== pendingActivePolicy) {
+    modelConfig.selectedPolicy = pendingActivePolicy;
+    displayActivePolicy(modelConfig.selectedPolicy);
 
-  modelConfig.jsonData.forEach(function (dataset) {
-    if (dataset.name === modelConfig.selectedPolicy) {
-      $.getJSON(dataset.file.name, function (json) {
-        dataset.data = json;
-      }).done(function () {
-        mapping.updateMapData();
-      }).fail(function (err) {
-        console.error("error loading model data: " + err);
-      });
-    } else {
-      dataset.data = null;
-    }
-  });
+    modelConfig.jsonData.forEach(function (dataset) {
+      if (dataset.name === modelConfig.selectedPolicy) {
+        modelConfig.geoAreaId = dataset.geoAreaId;
+        modelConfig.mappedProperty = dataset.mappedProperty;
+        $.getJSON(dataset.file.name, function (json) {
+          dataset.data = json;
+        }).done(function () {
+          mapping.updateMapData();
+        }).fail(function (err) {
+          console.error("error loading model data: " + err);
+        });
+      } else {
+        dataset.data = null;
+      }
+    });
+  }
 };
 
 var displayCurrentChoropleth = function displayCurrentChoropleth(currentChoropleth) {
@@ -1057,7 +1106,7 @@ var displayCurrentChoropleth = function displayCurrentChoropleth(currentChorople
   divContent += '</div>';
   $("#current-color-settings").html(buildChoroplethDisplay(currentChoropleth));
 };
-var buildChoroplethSelection = function buildChoroplethSelection(modelConfig) {
+var buildChoroplethSelection = function buildChoroplethSelection() {
   $("#all-color-selection")[0].innerHTML = '';
 
   $("#current-color-selection").html(buildChoroplethDisplay(modelConfig.choropleth));
@@ -1084,7 +1133,7 @@ var buildChoroplethDisplay = function buildChoroplethDisplay(choropleth) {
   divContent += '</div>';
   return divContent;
 };
-var saveChoroplethSelection = function saveChoroplethSelection(modelConfig, mapping) {
+var saveChoroplethSelection = function saveChoroplethSelection() {
   var colorName = $('input[name=choropleth-color-selector]:checked').val();
   var numColors = $('#color-number-dropdown')[0].value;
   modelConfig.choropleth = colors[colorName][numColors];
