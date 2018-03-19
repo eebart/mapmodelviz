@@ -1,4 +1,4 @@
-const colors = require('./colors.js');
+const colors = require('./js/colors.js');
 
 var modelConfig =  {
   modelName: '',

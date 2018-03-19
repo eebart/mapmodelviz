@@ -1,5 +1,5 @@
 var colors = require('./colors.js')
-var modelConfig = require('./config.js');
+var modelConfig = require('../config.js');
 var mapping = require('./map.js');
 
 var newPolicies = [];

@@ -148,7 +148,69 @@ var __makeRelativeRequire = function(require, mappings, pref) {
     return require(name);
   }
 };
-require.register("js/colors.js", function(exports, require, module) {
+require.register("index.js", function(exports, require, module) {
+'use strict';
+
+require('bootstrap');
+
+var modelConfig = require('./config.js'); //globals: $, jQuery and Tether, see config
+
+// import 'bootstrap';
+// adds all custom Bootstrap jQuery plugins
+// see all plugins here: http://getbootstrap.com/javascript/
+
+var mapping = require('./js/map.js');
+var util = require('./js/util.js');
+var settings = require('./js/settings.js');
+var details = require('./js/details.js');
+
+document.addEventListener('DOMContentLoaded', function () {
+  // do your setup here
+  modelConfig.map = new ol.Map({
+    target: 'map',
+    layers: [new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        attributions: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+      })
+    })],
+    options: {
+      numZoomLevels: 15
+    },
+    view: new ol.View({ center: ol.proj.fromLonLat([0, 0]), zoom: 7 })
+  });
+
+  util.buildChoroplethLegend(modelConfig);
+
+  //TODO remove this loading to support dynamic data.
+  var jsonFileName = 'dummydata.json';
+  $.getJSON(jsonFileName, function (json) {
+    modelConfig.jsonData.push({
+      name: 'Policy A',
+      data: json,
+      file: {
+        name: jsonFileName
+      },
+      geoAreaId: 'regioFacetId',
+      mappedProperty: 'value'
+    });
+    mapping.setNewActivePolicy('Policy A');
+  }).done(function () {
+    mapping.updateMapData();
+  }).fail(function (err) {
+    console.error("error loading model data: " + err);
+  });
+
+  settings.loadSettings();
+  details.loadDetails();
+});
+});
+
+require.register("js/charting.js", function(exports, require, module) {
+"use strict";
+});
+
+;require.register("js/colors.js", function(exports, require, module) {
 "use strict";
 
 // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
@@ -495,199 +557,10 @@ var choroplethColors = {
 module.exports = choroplethColors;
 });
 
-require.register("js/util.js", function(exports, require, module) {
-"use strict";
-
-var hexToRgb = function hexToRgb(hex) {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
-};
-
-var findChoroplethMinMax = function findChoroplethMinMax(modelConfig) {
-  var min = Infinity;
-  var max = -Infinity;
-  modelConfig.jsonData.forEach(function (policy) {
-    if (policy.name = modelConfig.selectedPolicy) {
-      for (var key in policy.data) {
-        if (policy.data[key][modelConfig.mappedProperty] < min) {
-          min = policy.data[key][modelConfig.mappedProperty];
-        }
-        if (policy.data[key][modelConfig.mappedProperty] > max) {
-          max = policy.data[key][modelConfig.mappedProperty];
-        }
-      }
-    }
-  });
-  modelConfig.choroplethDetails.min = min;
-  modelConfig.choroplethDetails.max = max;
-};
-
-var setChoroplethBuckets = function setChoroplethBuckets(modelConfig) {
-  var numColors = modelConfig.choropleth.length;
-  var range = modelConfig.choroplethDetails.max - modelConfig.choroplethDetails.min;
-  var intervalSize = (range + 0.0) / numColors;
-
-  modelConfig.choroplethRanges = [];
-  for (var i = 0; i < numColors; i++) {
-    modelConfig.choroplethRanges[i] = modelConfig.choroplethDetails.min + intervalSize * i;
-  }
-  modelConfig.choroplethRanges[i] = modelConfig.choroplethDetails.max;
-
-  modelConfig.jsonData.forEach(function (policy) {
-    if (policy.name = modelConfig.selectedPolicy) {
-      for (var key in policy.data) {
-        var choroplethNum = numColors - 1;
-        var value = policy.data[key][modelConfig.mappedProperty];
-        if (value !== modelConfig.choroplethDetails.max) {
-          choroplethNum = Math.floor((value - modelConfig.choroplethDetails.min) / intervalSize);
-        }
-        policy.data[key]['choroplethNum'] = choroplethNum;
-      }
-    }
-  });
-};
-
-var buildChoroplethLegend = function buildChoroplethLegend(modelConfig) {
-  var numColors = modelConfig.choropleth.length;
-  var sectionHeight = 20;
-  var totalHeight = sectionHeight * numColors + 10;
-
-  $("[id=legend]").height(totalHeight);
-  $("[id=choropleth-legend]").html('');
-  for (var i = 0; i < numColors; i++) {
-    var div = $('<div/>', {
-      'class': 'choropleth-details'
-    });
-
-    var colorDiv = $('<div/>', {
-      'style': 'background-color:' + modelConfig.choropleth[i] + ';',
-      'class': 'choropleth-color'
-    });
-    div.append(colorDiv);
-
-    if (modelConfig.choroplethRanges && modelConfig.choroplethRanges.length == numColors + 1) {
-      $("[id=legend]").width(130);
-      var textDiv = $('<div/>', {
-        'class': 'choropleth-text',
-        html: Math.round(modelConfig.choroplethRanges[i] * 100) / 100 + ' to ' + Math.round(modelConfig.choroplethRanges[i + 1] * 100) / 100
-      });
-
-      div.append(textDiv);
-    } else {
-      $("[id=legend]").width(30);
-    }
-
-    $("[id=choropleth-legend]").append(div);
-  }
-};
-
-module.exports = {
-  hexToRgb: hexToRgb,
-  findChoroplethMinMax: findChoroplethMinMax,
-  setChoroplethBuckets: setChoroplethBuckets,
-  buildChoroplethLegend: buildChoroplethLegend
-};
-});
-
-;require.register("index.js", function(exports, require, module) {
-'use strict';
-
-require('bootstrap');
-
-var modelConfig = require('./js/config.js'); //globals: $, jQuery and Tether, see config
-
-// import 'bootstrap';
-// adds all custom Bootstrap jQuery plugins
-// see all plugins here: http://getbootstrap.com/javascript/
-
-var mapping = require('./js/map.js');
-var util = require('./js/util.js');
-var settings = require('./js/settings.js');
-var details = require('./js/details.js');
-
-document.addEventListener('DOMContentLoaded', function () {
-  // do your setup here
-  modelConfig.map = new ol.Map({
-    target: 'map',
-    layers: [new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        attributions: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-      })
-    })],
-    options: {
-      numZoomLevels: 15
-    },
-    view: new ol.View({ center: ol.proj.fromLonLat([0, 0]), zoom: 7 })
-  });
-
-  util.buildChoroplethLegend(modelConfig);
-
-  //TODO remove this loading to support dynamic data.
-  var jsonFileName = 'dummydata.json';
-  $.getJSON(jsonFileName, function (json) {
-    modelConfig.jsonData.push({
-      name: 'Policy A',
-      data: json,
-      file: {
-        name: jsonFileName
-      },
-      geoAreaId: 'regioFacetId',
-      mappedProperty: 'value'
-    });
-    mapping.setNewActivePolicy('Policy A');
-  }).done(function () {
-    mapping.updateMapData();
-  }).fail(function (err) {
-    console.error("error loading model data: " + err);
-  });
-
-  settings.loadSettings();
-  details.loadDetails();
-});
-});
-
-require.register("js/charting.js", function(exports, require, module) {
-"use strict";
-});
-
-;require.register("js/config.js", function(exports, require, module) {
-'use strict';
-
-var colors = require('./colors.js');
-
-var modelConfig = {
-  modelName: '',
-
-  choropleth: colors.GnBu[5],
-  choroplethDetails: {
-    min: -Infinity,
-    max: Infinity
-  },
-  choroplethRanges: [],
-
-  geoJsonFile: {
-    name: 'provinces.geojson'
-  },
-  jsonData: [],
-  selectedPolicy: '',
-  geoAreaId: '',
-  mappedProperty: '',
-
-  map: null
-};
-
-module.exports = modelConfig;
-});
-
 require.register("js/details.js", function(exports, require, module) {
 'use strict';
 
-var modelConfig = require('./config.js');
+var modelConfig = require('../config.js');
 var charting = require('./charting.js');
 
 var loadDetails = function loadDetails() {
@@ -701,15 +574,18 @@ var loadDetails = function loadDetails() {
 var showJsonLoaded = function showJsonLoaded() {
   $("[id=no-region-selected]").show();
   $("[id=no-json-loaded]").hide();
+  $("[id=region-selected]").hide();
 };
 
 var hideFeatureDetails = function hideFeatureDetails() {
   $("[id=no-region-selected]").show();
   $("[id=region-selected]").hide();
+  $("[id=no-json-loaded]").hide();
 };
 
 var showFeatureDetails = function showFeatureDetails(feature) {
   $("[id=no-region-selected]").hide();
+  $("[id=no-json-loaded]").hide();
 
   $("[id=region-name]").html(feature.get('name'));
   $("[id=region-selected]").show();
@@ -726,7 +602,7 @@ module.exports = {
 ;require.register("js/map.js", function(exports, require, module) {
 'use strict';
 
-var modelConfig = require('./config.js');
+var modelConfig = require('../config.js');
 var util = require('./util.js');
 var details = require('./details.js');
 
@@ -946,7 +822,7 @@ module.exports = {
 'use strict';
 
 var colors = require('./colors.js');
-var modelConfig = require('./config.js');
+var modelConfig = require('../config.js');
 var mapping = require('./map.js');
 
 var newPolicies = [];
@@ -1145,6 +1021,104 @@ var saveChoroplethSelection = function saveChoroplethSelection() {
 
 module.exports = {
   loadSettings: loadSettings
+};
+});
+
+;require.register("js/util.js", function(exports, require, module) {
+"use strict";
+
+var hexToRgb = function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+};
+
+var findChoroplethMinMax = function findChoroplethMinMax(modelConfig) {
+  var min = Infinity;
+  var max = -Infinity;
+  modelConfig.jsonData.forEach(function (policy) {
+    if (policy.name = modelConfig.selectedPolicy) {
+      for (var key in policy.data) {
+        if (policy.data[key][modelConfig.mappedProperty] < min) {
+          min = policy.data[key][modelConfig.mappedProperty];
+        }
+        if (policy.data[key][modelConfig.mappedProperty] > max) {
+          max = policy.data[key][modelConfig.mappedProperty];
+        }
+      }
+    }
+  });
+  modelConfig.choroplethDetails.min = min;
+  modelConfig.choroplethDetails.max = max;
+};
+
+var setChoroplethBuckets = function setChoroplethBuckets(modelConfig) {
+  var numColors = modelConfig.choropleth.length;
+  var range = modelConfig.choroplethDetails.max - modelConfig.choroplethDetails.min;
+  var intervalSize = (range + 0.0) / numColors;
+
+  modelConfig.choroplethRanges = [];
+  for (var i = 0; i < numColors; i++) {
+    modelConfig.choroplethRanges[i] = modelConfig.choroplethDetails.min + intervalSize * i;
+  }
+  modelConfig.choroplethRanges[i] = modelConfig.choroplethDetails.max;
+
+  modelConfig.jsonData.forEach(function (policy) {
+    if (policy.name = modelConfig.selectedPolicy) {
+      for (var key in policy.data) {
+        var choroplethNum = numColors - 1;
+        var value = policy.data[key][modelConfig.mappedProperty];
+        if (value !== modelConfig.choroplethDetails.max) {
+          choroplethNum = Math.floor((value - modelConfig.choroplethDetails.min) / intervalSize);
+        }
+        policy.data[key]['choroplethNum'] = choroplethNum;
+      }
+    }
+  });
+};
+
+var buildChoroplethLegend = function buildChoroplethLegend(modelConfig) {
+  var numColors = modelConfig.choropleth.length;
+  var sectionHeight = 20;
+  var totalHeight = sectionHeight * numColors + 10;
+
+  $("[id=legend]").height(totalHeight);
+  $("[id=choropleth-legend]").html('');
+  for (var i = 0; i < numColors; i++) {
+    var div = $('<div/>', {
+      'class': 'choropleth-details'
+    });
+
+    var colorDiv = $('<div/>', {
+      'style': 'background-color:' + modelConfig.choropleth[i] + ';',
+      'class': 'choropleth-color'
+    });
+    div.append(colorDiv);
+
+    if (modelConfig.choroplethRanges && modelConfig.choroplethRanges.length == numColors + 1) {
+      $("[id=legend]").width(130);
+      var textDiv = $('<div/>', {
+        'class': 'choropleth-text',
+        html: Math.round(modelConfig.choroplethRanges[i] * 100) / 100 + ' to ' + Math.round(modelConfig.choroplethRanges[i + 1] * 100) / 100
+      });
+
+      div.append(textDiv);
+    } else {
+      $("[id=legend]").width(30);
+    }
+
+    $("[id=choropleth-legend]").append(div);
+  }
+};
+
+module.exports = {
+  hexToRgb: hexToRgb,
+  findChoroplethMinMax: findChoroplethMinMax,
+  setChoroplethBuckets: setChoroplethBuckets,
+  buildChoroplethLegend: buildChoroplethLegend
 };
 });
 

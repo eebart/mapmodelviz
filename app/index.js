@@ -6,7 +6,7 @@
 
 import 'bootstrap';
 
-var modelConfig = require('./js/config.js');
+var modelConfig = require('./config.js');
 var mapping = require('./js/map.js');
 var util = require('./js/util.js');
 var settings = require('./js/settings.js');

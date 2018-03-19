@@ -1,4 +1,4 @@
-var modelConfig = require('./config.js');
+var modelConfig = require('../config.js');
 var charting = require('./charting.js');
 
 var loadDetails = function() {
@@ -12,15 +12,18 @@ var loadDetails = function() {
 var showJsonLoaded = function() {
   $("[id=no-region-selected]").show();
   $("[id=no-json-loaded]").hide();
+  $("[id=region-selected]").hide();
 };
 
 var hideFeatureDetails = function() {
   $("[id=no-region-selected]").show();
   $("[id=region-selected]").hide();
+  $("[id=no-json-loaded]").hide();
 };
 
 var showFeatureDetails = function(feature) {
   $("[id=no-region-selected]").hide();
+  $("[id=no-json-loaded]").hide();
 
   $("[id=region-name]").html(feature.get('name'));
   $("[id=region-selected]").show();

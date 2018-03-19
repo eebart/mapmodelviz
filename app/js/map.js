@@ -1,4 +1,4 @@
-var modelConfig = require('./config.js');
+var modelConfig = require('../config.js');
 var util = require('./util.js');
 var details = require('./details.js');
 
