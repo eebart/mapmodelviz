@@ -34,7 +34,7 @@ exports.plugins = {
   },
   sass: {
     options: {
-      includePaths: ['./node_modules/bootstrap/scss/'],
+      includePaths: ['./node_modules/bootstrap/scss/', './node_modules/chartist/scss/'],
       precision: 8
     }
   }

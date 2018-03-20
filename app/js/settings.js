@@ -1,9 +1,31 @@
 var colors = require('./colors.js')
 var modelConfig = require('../config.js');
 var mapping = require('./map.js');
+var details = require('./details.js');
 
 var newPolicies = [];
 var pendingActivePolicy = '';
+
+var loadOptionalConfig = function() {
+  var jsonFileName = 'config.json';
+  $.getJSON(jsonFileName, function(json) {
+    json.choropleth = findChoropleth(json.choroplethString);
+    Object.assign(modelConfig, json);
+    loadModelData();
+  })
+  .done(function() {
+    loadSettings();
+  })
+  .fail(function(err) {
+    //No Config file provided
+  })
+}
+var findChoropleth = function(choroplethString) {
+  var bracket = choroplethString.indexOf("[")
+  var base = choroplethString.substring(0,bracket);
+  var numColors = parseInt(choroplethString.substring(bracket+1, bracket+2));
+  return colors[base][numColors];
+}
 
 var loadSettings = function() {
   $("#settings-content").load("settings.html", function() {
@@ -13,20 +35,12 @@ var loadSettings = function() {
     displayModelName(modelConfig.modelName);
     displayGeoJsonFile(modelConfig.geoJsonFile);
 
-    $("[id=geojson-file-selector]").change(function() {
-      modelConfig.geoJsonFile = this.files[0];
-      displayGeoJsonFile(modelConfig.geoJsonFile);
-      mapping.updateMapData();
-    });
-
     $("#name-popup").load("nameSelector.html", function() {
       $("[id=name-change-save]").click(function() {
         saveModelName();
       });
     });
     $("#color-popup").load("colorSelector.html", function() {
-      buildChoroplethSelection();
-
       $("[id=color-number-dropdown]").change(function() {
         buildChoroplethSelection();
       });
@@ -36,6 +50,13 @@ var loadSettings = function() {
       });
     });
     $("#model-popup").load("modelSelector.html", function() {
+      if (modelConfig.allowFileUpload) {
+        $("#add-new-policy").show();
+
+      } else {
+        $("#add-new-policy").hide();
+      }
+
       $("[id=policy-file-selector]").change(function() {
         $("[id=policy-file-selected-name]").html(this.files[0].name);
       });
@@ -48,6 +69,31 @@ var loadSettings = function() {
         updateMapPolicies();
       });
     });
+    $("#export-popup").load("exportSelector.html", function() {
+      $("[id=export-save]").click(function() {
+        saveConfigAsFile();
+      });
+    });
+
+    if(modelConfig.allowFileUpload) {
+      $("[id=geojson-file-selector]").change(function() {
+        modelConfig.geoJsonFile = this.files[0];
+        displayGeoJsonFile(modelConfig.geoJsonFile);
+        mapping.updateMapData();
+      });
+      $("[id=change-color-btn]").click(function() {
+        buildChoroplethSelection();
+      });
+      $("[id=export-config-btn]").click(function() {
+        // buildChoroplethSelection();
+      });
+    } else {
+      $("[id=geojson-file-selector]").prop('disabled', true);
+      $("[id=geojson-upload-btn]").addClass('disabled');
+      $("[id=name-change-btn]").prop('disabled', true);
+      $("[id=change-color-btn]").prop('disabled', true);
+      $("[id=export-config-btn]").prop('disabled', true);
+    }
 
     $("[id=manage-policies]").click(function() {
       buildModelDataDisplay(modelConfig.jsonData, modelConfig.selectedPolicy);
@@ -55,9 +101,6 @@ var loadSettings = function() {
       $('#policy-row-add').on('click', 'tr', function(){
         setNewActivePolicy(this);
       });
-    });
-    $("[id=change-color-button]").click(function() {
-      buildChoroplethSelection();
     });
   });
 };
@@ -135,30 +178,32 @@ var updateMapPolicies = function() {
     modelConfig.selectedPolicy = pendingActivePolicy;
     displayActivePolicy(modelConfig.selectedPolicy);
 
-    modelConfig.jsonData.forEach(function(dataset){
-      if (dataset.name === modelConfig.selectedPolicy) {
-        modelConfig.geoAreaId = dataset.geoAreaId;
-        modelConfig.mappedProperty = dataset.mappedProperty;
-        $.getJSON(dataset.file.name, function(json) {
-          dataset.data = json;
-        })
-        .done(function() {
-          mapping.updateMapData();
-        })
-        .fail(function(err) {
-          console.error( "error loading model data: " + err );
-        })
-      } else {
-        dataset.data = null;
-      }
-    });
+    loadModelData();
   }
+};
+var loadModelData = function() {
+  modelConfig.jsonData.forEach(function(dataset){
+    if (dataset.name === modelConfig.selectedPolicy) {
+      modelConfig.geoAreaId = dataset.geoAreaId;
+      modelConfig.mappedProperty = dataset.mappedProperty;
+      $.getJSON(dataset.file.name, function(json) {
+        dataset.data = json;
+      })
+      .done(function() {
+        mapping.updateMapData();
+        details.loadDetails();
+      })
+      .fail(function(err) {
+        console.error( "error loading model data: " + err );
+        details.loadDetails();
+      })
+    } else {
+      dataset.data = null;
+    }
+  });
 };
 
 var displayCurrentChoropleth = function(currentChoropleth) {
-  var divContent = '<div class="row">';
-  divContent += buildChoroplethDisplay(currentChoropleth);
-  divContent += '</div>';
   $("#current-color-settings").html(buildChoroplethDisplay(currentChoropleth));
 };
 var buildChoroplethSelection = function() {
@@ -182,9 +227,11 @@ var buildChoroplethSelection = function() {
 };
 var buildChoroplethDisplay = function(choropleth) {
   var divContent = '<div class="row">';
-  choropleth.forEach(function(color){
-    divContent += '<div class="col" style="background-color:' + color + ';"/>'
-  });
+  if (choropleth !== null) {
+    choropleth.forEach(function(color){
+      divContent += '<div class="col" style="background-color:' + color + ';"/>'
+    });
+  }
   divContent += '</div>';
   return divContent;
 };
@@ -192,12 +239,63 @@ var saveChoroplethSelection = function() {
   var colorName = $('input[name=choropleth-color-selector]:checked').val();
   var numColors = $('#color-number-dropdown')[0].value;
   modelConfig.choropleth = colors[colorName][numColors];
+  modelConfig.choroplethString = colorName + "[" + numColors.str() + "]";
 
   $("#current-color-selection").html(buildChoroplethDisplay(modelConfig.choropleth));
   displayCurrentChoropleth(modelConfig.choropleth);
   mapping.updateMapData();
 };
 
+var saveConfigAsFile = function() {
+  var config = {
+    modelName: modelConfig.modelName,
+
+    choroplethString: modelConfig.choroplethString,
+    geoJsonFile: {
+      name: modelConfig.geoJsonFile.name
+    },
+    jsonData: modelConfig.jsonData,
+    selectedPolicy: modelConfig.selectedPolicy
+  };
+  config.jsonData.forEach(function(dataset) {
+    delete dataset.data;
+  });
+  config.allowFileUpload = $("[id=allow-file-change]").hasClass('active');
+
+  var textToWrite = JSON.stringify(config);
+  var textFileAsBlob = new Blob([textToWrite], { type: 'text/json' });
+  var fileNameToSaveAs = "config.json";
+
+  // create a link for our script to 'click'
+  var downloadLink = document.createElement("a");
+  downloadLink.download = fileNameToSaveAs;
+  // provide text for the link. This will be hidden so you
+  // can actually use anything you want.
+  downloadLink.innerHTML = "Config Download";
+
+  // allow our code to work in webkit & Gecko based browsers
+  // without the need for a if / else block.
+  window.URL = window.URL || window.webkitURL;
+
+  // Create the link Object.
+  downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+  // when link is clicked call a function to remove it from
+  // the DOM in case user wants to save a second file.
+  downloadLink.onclick = destroyClickedElement;
+  // make sure the link is hidden.
+  downloadLink.style.display = "none";
+  // add the link to the DOM
+  document.body.appendChild(downloadLink);
+
+  // click the new link
+  downloadLink.click();
+}
+function destroyClickedElement(event) {
+  // remove the link from the DOM
+  document.body.removeChild(event.target);
+}
+
 module.exports = {
-  loadSettings: loadSettings
+  loadSettings: loadSettings,
+  loadOptionalConfig: loadOptionalConfig
 }

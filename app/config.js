@@ -3,17 +3,17 @@ const colors = require('./js/colors.js');
 var modelConfig =  {
   modelName: '',
 
+  allowFileUpload: true,
 
-  choropleth: colors.GnBu[5],
+  choropleth: null,
   choroplethDetails: {
     min: -Infinity,
     max: Infinity
   },
   choroplethRanges: [],
+  currentIndex: 0,
 
-  geoJsonFile: {
-    name: 'provinces.geojson'
-  },
+  geoJsonFile: {},
   jsonData: [],
   selectedPolicy: '',
   geoAreaId: '',

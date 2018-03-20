@@ -39,10 +39,31 @@ var hoverStyle = new ol.style.Style({
   })
 });
 
+var loadMap = function() {
+  modelConfig.map = new ol.Map({
+    target : 'map',
+    layers : [
+      new ol.layer.Tile({
+        source: new ol.source.XYZ({
+          attributions: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+        })
+      })
+    ],
+    options: {
+      numZoomLevels: 15
+    },
+    view :
+      new ol.View({center : ol.proj.fromLonLat([4.3668409,52.0024612]), zoom : 3})
+  });
+  util.buildChoroplethLegend(modelConfig);
+};
+
 var updateMapData = function() {
   util.findChoroplethMinMax(modelConfig);
   util.setChoroplethBuckets(modelConfig);
   util.buildChoroplethLegend(modelConfig);
+  util.updateSlider(modelConfig);
 
   addGeoJSONLayer();
 };
@@ -209,6 +230,7 @@ var resetMap = function(evt) {
 };
 
 module.exports = {
+  loadMap: loadMap,
   addGeoJSONLayer: addGeoJSONLayer,
   updateMapData: updateMapData,
   setNewActivePolicy: setNewActivePolicy

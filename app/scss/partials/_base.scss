@@ -1,0 +1,86 @@
+
+.centered-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main {
+  height: 100vh;
+  min-height:600px;
+  margin-left:10px;
+  margin-right:10px;
+}
+
+.section {
+  padding:10px;
+  @media (min-width: 768px) {
+    height: 100vh;
+    min-height:600px;
+  }
+}
+
+.viewport {
+  border:2px solid black;
+  border-radius:10px;
+  height: 100%;
+  width: 100%;
+}
+
+.map-view {
+  min-height: 300px;
+  .map {
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid none;
+  }
+}
+
+.setting-view {
+  min-height: 400px;
+
+  .setting-title {
+    margin-top:-19px;
+    margin-left:30px;
+    background-color:white;
+    font-size: 1.5rem;
+    display: table;
+
+    padding-left:5px;
+    padding-right:5px;
+  }
+
+  .model-detail {
+    height:70%;
+    padding-bottom:10px;
+
+    display: flex;
+    flex-flow: column;
+
+    .header {
+      flex:unset;
+    }
+    .details {
+      flex: 1;
+    }
+
+    .center-message {
+      width:100%;
+      height:100%;
+      @extend .centered-content;
+    }
+
+    #region-selected {
+      padding: 10px;
+    }
+  }
+
+  .full-col {
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+  }
+}

@@ -1,5 +1,4 @@
 var modelConfig = require('../config.js');
-var charting = require('./charting.js');
 
 var loadDetails = function() {
   $("#details-content").load("details.html", function() {
@@ -27,6 +26,27 @@ var showFeatureDetails = function(feature) {
 
   $("[id=region-name]").html(feature.get('name'));
   $("[id=region-selected]").show();
+
+  showPrimaryChart(feature);
+};
+
+var showPrimaryChart = function(feature) {
+  modelConfig.jsonData.forEach(function(policy) {
+    if (policy.name === modelConfig.selectedPolicy) {
+      policy.data.forEach(function(dataset) {
+        if (dataset[modelConfig.geoAreaId] == feature.get(modelConfig.geoAreaId)) {
+          var dataVals = dataset[modelConfig.mappedProperty];
+          var data = {
+            labels: modelConfig.timeSeries,
+            series:[
+              dataVals
+            ]
+          };
+          new Chartist.Line('.ct-chart', data);
+        }
+      });
+    }
+  });
 };
 
 module.exports = {

@@ -1069,10 +1069,6 @@ chalk@~0.4.0:
     has-color "~0.1.0"
     strip-ansi "~0.1.0"
 
-chartist@^0.11.0:
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/chartist/-/chartist-0.11.0.tgz#84ba5e05490d096d93dcfa9343ebc31ef6a3bd28"
-
 check-dependencies@~1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/check-dependencies/-/check-dependencies-1.0.1.tgz#9e7f15822de20621ec6b9ffaabac4d588c3811b0"
@@ -2819,9 +2815,9 @@ once@^1.3.0, once@^1.3.3:
   dependencies:
     wrappy "1"
 
-openlayers@^4.6.4:
-  version "4.6.4"
-  resolved "https://registry.yarnpkg.com/openlayers/-/openlayers-4.6.4.tgz#7fa1032177103dbde19d1238a04a957a47a22156"
+openlayers@^4.6.5:
+  version "4.6.5"
+  resolved "https://registry.yarnpkg.com/openlayers/-/openlayers-4.6.5.tgz#27c59f98192ec465f1a02c7a23537ac31d90a472"
   dependencies:
     async "2.6.0"
     closure-util "1.26.0"
@@ -2988,9 +2984,9 @@ pixelworks@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/pixelworks/-/pixelworks-1.1.0.tgz#1f095ad48dca8bf8a1c8258e0092031a44f22ca5"
 
-popper.js@^1.13.0:
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.13.0.tgz#e1e7ff65cc43f7cf9cf16f1510a75e81f84f4565"
+popper.js@^1.14.1:
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.14.1.tgz#b8815e5cda6f62fc2042e47618649f75866e6753"
 
 postcss-modules-extract-imports@1.1.0:
   version "1.1.0"

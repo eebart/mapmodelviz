@@ -1,5 +1,5 @@
 <div class="settings-content">
-    <div class="row">
+    <div class="row"> <!-- Model Name -->
         <div class="col-sm-4 name">
             Model Name
         </div>
@@ -7,12 +7,12 @@
             <div id="current-model-name" class="settings-value"></div>
         </div>
         <div class="col-sm-4 name">
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#name-modal">
+            <button type="button" id="name-change-btn" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#name-modal">
                 Change
             </button>
         </div>
     </div>
-    <div class="row">
+    <div class="row"> <!-- Model Data -->
         <div class="col-sm-4 name">
             Active Policy
         </div>
@@ -25,7 +25,7 @@
             </button>
         </div>
     </div>
-    <div class="row">
+    <div class="row"> <!-- GeoJSON Data -->
         <div class="col-sm-4 name">
             GeoJSON Data
         </div>
@@ -33,13 +33,13 @@
             <div id="geojson-file" class="settings-value"></div>
         </div>
         <div class="col-sm-4 name">
-            <label class="btn btn-primary btn-sm" style="margin-bottom:0px;">
+            <label class="btn btn-primary btn-sm" style="margin-bottom:0px;" id="geojson-upload-btn">
                 Load<input id="geojson-file-selector" type="file" style="display: none;" onchange="">
             </label>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row"> <!-- Color Scheme -->
         <div class="col name">
             Color Scheme
         </div>
@@ -47,13 +47,22 @@
             <div id="current-color-settings" class="choropleth-display"></div>
         </div>
         <div class="col-sm-4">
-            <button type="button" id="change-color-button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#color-modal">
+            <button type="button" id="change-color-btn" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#color-modal">
                 Change
+            </button>
+        </div>
+    </div>
+
+    <div class="row"> <!-- Export -->
+        <div class="col-sm">
+            <button type="button" id="export-config-btn" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#export-modal">
+                Export
             </button>
         </div>
     </div>
 </div>
 
-<div id="color-popup"></div>
-<div id="model-popup"></div>
 <div id="name-popup"></div>
+<div id="model-popup"></div>
+<div id="color-popup"></div>
+<div id="export-popup"></div>
