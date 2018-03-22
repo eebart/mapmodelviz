@@ -39,10 +39,10 @@
   }
 }
 
-.setting-view {
+.info-view {
   min-height: 400px;
 
-  .setting-title {
+  .info-title {
     margin-top:-19px;
     margin-left:30px;
     background-color:white;
@@ -51,36 +51,40 @@
 
     padding-left:5px;
     padding-right:5px;
+
+    position:absolute;
   }
 
   .model-detail {
     height:70%;
-    padding-bottom:10px;
-
     display: flex;
     flex-flow: column;
 
-    .header {
-      flex:unset;
-    }
-    .details {
-      flex: 1;
-    }
-
-    .center-message {
+    .model-title {
+      padding-bottom:20px;
       width:100%;
-      height:100%;
-      @extend .centered-content;
+      overflow-x:auto;
     }
 
-    #region-selected {
-      padding: 10px;
+    .viewport {
+      flex: 2;
     }
   }
 
-  .full-col {
-    height: 100%;
-    display: flex;
-    align-items: flex-end;
+  .settings-detail {
+    height:30%;
+    padding-top:20px;
+  }
+
+  .info-content {
+    width:100%;
+    height:100%;
+    padding-top: 20px;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .viewport {
+    overflow: auto;
   }
 }

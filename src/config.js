@@ -1,4 +1,3 @@
-const colors = require('./js/colors.js');
 
 var modelConfig =  {
   modelName: '',
@@ -22,4 +21,4 @@ var modelConfig =  {
   map: null
 };
 
-module.exports = modelConfig;
+export default modelConfig;

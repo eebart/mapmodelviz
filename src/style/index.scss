@@ -1,0 +1,19 @@
+
+@import "~bootstrap/scss/bootstrap";
+
+// Import all Bootstrap_ext here
+@import './bootstrap_ext/button';
+@import "./bootstrap_ext/toggle";
+@import "./bootstrap_ext/slider";
+
+@import "~chartist/dist/chartist";
+
+// here go's the rest
+@import "./partials/base";
+@import "./partials/map";
+@import "./partials/details";
+@import "./partials/settings";
+
+// body {
+//   margin:0px;
+// }

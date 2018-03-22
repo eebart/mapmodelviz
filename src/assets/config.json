@@ -5,12 +5,14 @@
 
   "choroplethString": "GnBu[5]",
   "geoJsonFile": {
-    "name": "provinces.geojson"
+    "name": "provinces.geojson",
+    "url": "assets/provinces.geojson"
   },
   "jsonData": [{
     "name": "Policy A",
     "file": {
-      "name": "dummydata.json"
+      "name": "dummydata.json", 
+      "url": "assets/dummydata.json"
     },
     "geoAreaId": "regioFacetId",
     "mappedProperty": "value"

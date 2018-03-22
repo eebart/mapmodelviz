@@ -1,6 +1,6 @@
 // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
 // JavaScript specs as packaged in the D3 library (d3js.org). Please see license at http://colorbrewer.org/export/LICENSE.txt
-var choroplethColors = {
+const choroplethColors = {
   YlGn: {
     name: 'Yellow Green',
     3: ["#f7fcb9","#addd8e","#31a354"],
@@ -339,4 +339,4 @@ var choroplethColors = {
   }
 };
 
-module.exports = choroplethColors;
+export default choroplethColors;

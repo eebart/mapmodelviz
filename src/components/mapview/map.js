@@ -1,6 +1,6 @@
-var modelConfig = require('../config.js');
-var util = require('./util.js');
-var details = require('./details.js');
+import * as util from '../../util/util.js';
+import * as details from '../details/details.js';
+var ol = require('openlayers');
 
 var standardStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
@@ -39,8 +39,8 @@ var hoverStyle = new ol.style.Style({
   })
 });
 
-var loadMap = function() {
-  modelConfig.map = new ol.Map({
+export function loadMap() {
+  config.map = new ol.Map({
     target : 'map',
     layers : [
       new ol.layer.Tile({
@@ -56,43 +56,48 @@ var loadMap = function() {
     view :
       new ol.View({center : ol.proj.fromLonLat([4.3668409,52.0024612]), zoom : 3})
   });
-  util.buildChoroplethLegend(modelConfig);
+  util.buildChoroplethLegend();
 };
 
-var updateMapData = function() {
-  util.findChoroplethMinMax(modelConfig);
-  util.setChoroplethBuckets(modelConfig);
-  util.buildChoroplethLegend(modelConfig);
-  util.updateSlider(modelConfig);
+export function updateMapData() {
+  util.findChoroplethMinMax();
+  util.setChoroplethBuckets();
+  util.buildChoroplethLegend();
+  util.updateSlider();
 
   addGeoJSONLayer();
 };
-var setNewActivePolicy = function(newPolicyName) {
-  modelConfig.selectedPolicy = newPolicyName;
-  modelConfig.jsonData.forEach(function(policy) {
+
+export function setNewActivePolicy(newPolicyName) {
+  config.selectedPolicy = newPolicyName;
+  config.jsonData.forEach(function(policy) {
     if (policy.name = newPolicyName) {
-      modelConfig.geoAreaId = policy.geoAreaId;
-      modelConfig.mappedProperty = policy.mappedProperty;
+      config.geoAreaId = policy.geoAreaId;
+      config.mappedProperty = policy.mappedProperty;
     }
   });
 }
 
 var getFillColor = function(feature) {
-  var choroplethNum = 0;
-  var id = feature.get(modelConfig.geoAreaId);
-  modelConfig.jsonData.forEach(function(policy) {
-    if (policy.name = modelConfig.selectedPolicy) {
-      for (var key in policy.data) {
-        if (policy.data[key][modelConfig.geoAreaId] == id) {
-          choroplethNum = policy.data[key]['choroplethNum'];
-          break;
+  if (config.choropleth !== null && config.selectedPolicy !== '') {
+    var choroplethNum = 0;
+    var id = feature.get(config.geoAreaId);
+    config.jsonData.forEach(function(policy) {
+      if (policy.name = config.selectedPolicy) {
+        for (var key in policy.data) {
+          if (policy.data[key][config.geoAreaId] == id) {
+            choroplethNum = policy.data[key]['choroplethNum'];
+            break;
+          }
         }
       }
-    }
-  });
-  choroplethNum = choroplethNum ? choroplethNum : 0;
-  var hex = modelConfig.choropleth[choroplethNum];
-  return util.hexToRgb(hex);
+    });
+    choroplethNum = choroplethNum ? choroplethNum : 0;
+    var hex = config.choropleth[choroplethNum];
+    return util.hexToRgb(hex);
+  } else {
+    return { r: 255, g: 255, b: 255};
+  }
 };
 
 var baseStyleFunction = function(feature, style, transparency) {
@@ -120,12 +125,19 @@ var geoJSONLayer, featureOverlay, hoverOverlay;
 var highlight, hovered;
 var clickEvent, hoverEvent;
 
-var addGeoJSONLayer = function() {
+export function addGeoJSONLayer() {
   resetMap();
 
-  // Alternate way to read geoJSON files
-  $.getJSON( modelConfig.geoJsonFile.name, function( json ) {
-    // console.log('successfully loaded GeoJSON');
+  if (jQuery.isEmptyObject(config.geoJsonFile)) {
+    return;
+  }
+
+  var url = config.geoJsonFile.url;
+  if (!url || url === '') {
+    url = URL.createObjectURL(config.geoJsonFile);
+  }
+  $.getJSON( url, function( json ) {
+    console.log('successfully loaded GeoJSON');
   })
   .done(function( json ) {
     details.showJsonLoaded();
@@ -138,22 +150,24 @@ var addGeoJSONLayer = function() {
       // map: map,
       style: styleFunction
     });
-    modelConfig.map.addLayer(geoJSONLayer);
-    modelConfig.map.getView().fit(vectorSource.getExtent(), (modelConfig.map.getSize()));
+    config.map.addLayer(geoJSONLayer);
+    config.map.getView().fit(vectorSource.getExtent(), (config.map.getSize()));
 
-    featureOverlay = new ol.layer.Vector({
-      source: new ol.source.Vector(),
-      map: modelConfig.map,
-      style: highlightStyleFunction
-    });
-    hoverOverlay = new ol.layer.Vector({
-      source: new ol.source.Vector(),
-      map: modelConfig.map,
-      style: hoveredStyleFunction
-    });
+    if (config.selectedPolicy !== '') {
+      featureOverlay = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        map: config.map,
+        style: highlightStyleFunction
+      });
+      hoverOverlay = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        map: config.map,
+        style: hoveredStyleFunction
+      });
 
-    hoverEvent = modelConfig.map.on('pointermove', onMapHover);
-    clickEvent = modelConfig.map.on('click', onMapClick);
+      hoverEvent = config.map.on('pointermove', onMapHover);
+      clickEvent = config.map.on('click', onMapClick);
+    }
   }).fail(function(err) {
     console.error( "Error rendering geojson map layer: " + err );
   });
@@ -163,8 +177,8 @@ var onMapHover = function(evt) {
   if (evt.dragging) {
     return;
   }
-  var pixel = modelConfig.map.getEventPixel(evt.originalEvent);
-  var feature = modelConfig.map.forEachFeatureAtPixel(pixel, function(feature) {
+  var pixel = config.map.getEventPixel(evt.originalEvent);
+  var feature = config.map.forEachFeatureAtPixel(pixel, function(feature) {
     return feature;
   });
 
@@ -179,7 +193,7 @@ var onMapHover = function(evt) {
   }
 };
 var onMapClick = function(evt) {
-  var feature = modelConfig.map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+  var feature = config.map.forEachFeatureAtPixel(evt.pixel, function(feature) {
     return feature;
   });
 
@@ -213,13 +227,13 @@ var resetMap = function(evt) {
     highlight = null;
   }
   if (geoJSONLayer) {
-    modelConfig.map.removeLayer(geoJSONLayer);
+    config.map.removeLayer(geoJSONLayer);
   }
   if (featureOverlay) {
-    modelConfig.map.removeLayer(featureOverlay);
+    config.map.removeLayer(featureOverlay);
   }
   if (hoverOverlay) {
-    modelConfig.map.removeLayer(hoverOverlay);
+    config.map.removeLayer(hoverOverlay);
   }
   if (hoverEvent) {
     ol.Observable.unByKey(hoverEvent);
@@ -228,10 +242,3 @@ var resetMap = function(evt) {
     ol.Observable.unByKey(clickEvent);
   }
 };
-
-module.exports = {
-  loadMap: loadMap,
-  addGeoJSONLayer: addGeoJSONLayer,
-  updateMapData: updateMapData,
-  setNewActivePolicy: setNewActivePolicy
-}

@@ -1,0 +1,7 @@
+.model-detail {
+  .center-message {
+    width:100%;
+    height:100%;
+    @extend .centered-content;
+  }
+}
