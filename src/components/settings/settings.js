@@ -1,5 +1,5 @@
 import choroplethColors from '../../util/colors.js';
-import { updateMapData } from '../mapview/map.js';
+import { updateMapData, addGeoJSONLayer } from '../mapview/map.js';
 import { loadDetails } from '../details/details.js';
 
 var settingshtml = require('./settings.html');
@@ -25,6 +25,7 @@ var loadOptionalConfig = function() {
   .fail(function(err) {
     console.log("Configuration File Not Found. Continuing without loading one.");
     loadDetails();
+    loadSettings();
   })
 }
 var findChoropleth = function(choroplethString) {
@@ -48,7 +49,7 @@ var loadSettings = function() {
   displayCurrentChoropleth(config.choropleth);
   displayActivePolicy(config.selectedPolicy);
   displayModelName(config.modelName);
-  displayGeoJsonFile(config.geoJsonFile);
+  displayGeoJsonFile(config.geoJson.file);
 
   $("[id=name-change-save]").click(function() {
     saveModelName();
@@ -78,8 +79,8 @@ var loadSettings = function() {
   if(config.allowFileUpload) {
     $("#add-new-policy").show();
     $("[id=geojson-file-selector]").change(function() {
-      config.geoJsonFile = this.files[0];
-      displayGeoJsonFile(config.geoJsonFile);
+      config.geoJson = this.files[0];
+      displayGeoJsonFile(config.geoJson.file);
       updateMapData();
     });
 
@@ -128,10 +129,9 @@ var saveModelName = function() {
 };
 
 /** GeoJSON Settings **/
-var displayGeoJsonFile = function(geoJsonFile) {
-  $("[id=geojson-file]").html(geoJsonFile.name);
+var displayGeoJsonFile = function(file) {
+  $("[id=geojson-file]").html(file.name);
 };
-
 
 /** Model Data Settings **/
 var displayActivePolicy = function(activePolicy) {
@@ -194,6 +194,10 @@ var updateMapPolicies = function() {
   }
 };
 var loadModelData = function() {
+  if (config.jsonData.length === 0) {
+    addGeoJSONLayer();
+  }
+
   config.jsonData.forEach(function(dataset){
     if (dataset.name === config.selectedPolicy) {
       config.geoAreaId = dataset.geoAreaId;
@@ -203,24 +207,74 @@ var loadModelData = function() {
       if (!url || url === '') {
         url = URL.createObjectURL(dataset.file);
       }
-      $.getJSON(url, function(json) {
-        dataset.data = json;
-      })
-      .done(function() {
-        updateMapData();
-        loadDetails();
-      })
-      .fail(function(err) {
-        console.error( "error loading model data: " + err );
-        loadDetails();
-      })
+      loadCSVData(dataset, url);
 
     } else {
       dataset.data = null;
     }
   });
 };
+var loadCSVData = function(dataset, url) {
+  $.ajax({
+    type: "GET",
+    url: url,
+    dataType: "text",
+    success: function(data) {
+      var parsed = processData(data, dataset.geoAreaId);
+      dataset.data = parsed.data;
+      config.timeSeries = parsed.timeSeries;
+      config.currentIndex = config.timeSeries[0];
+      updateMapData();
+      loadDetails();
+    },
+    error: function(data) {
+      console.error( "error loading model data: " + err );
+      loadDetails();
+    }
+  });
+};
+var processData = function(allText, geoAreaId) {
+  var allTextLines = allText.split(/\r\n|\n/);
+  var headers = allTextLines[0].split(',');
+  var parsed = {};
 
+  var timeIdx = headers.indexOf('Time') + 1;
+  var timeSeries = headers.slice(timeIdx);
+
+  var geoAreaIdx = headers.indexOf(geoAreaId);
+
+  for (var i=1; i<allTextLines.length; i++) {
+    var data = allTextLines[i].split(',');
+
+    if(!(data[geoAreaIdx] in parsed)){
+      parsed[data[geoAreaIdx]] = {}
+      for (var idx = 0; idx < timeIdx - 1; idx++) {
+        // if (idx !== geoAreaIdx) {
+          parsed[data[geoAreaIdx]][headers[idx]] = data[idx];
+        // }
+      }
+    }
+    parsed[data[geoAreaIdx]][data[timeIdx - 1]] = data.slice(timeIdx);
+  }
+
+  var values = Object.keys(parsed).map(function(key){
+    return parsed[key];
+  });
+  return {timeSeries: timeSeries, data: values};
+};
+var loadJSONData = function(url) {
+  $.getJSON(url, function(json) {
+    dataset.data = json;
+  })
+  .done(function() {
+    updateMapData();
+    loadDetails();
+  })
+  .fail(function(err) {
+    console.error( "error loading model data: " + err );
+    loadDetails();
+  })
+}
 
 /** Choropleth Settings **/
 var displayCurrentChoropleth = function(currentChoropleth) {
@@ -284,8 +338,11 @@ var saveConfigAsFile = function() {
     modelName: config.modelName,
 
     choroplethString: config.choroplethString,
-    geoJsonFile: {
-      name: config.geoJsonFile.name
+    geoJson: {
+      file: {
+        name: config.geoJson.file.name
+      },
+      text: config.geoJson.text
     },
     jsonData: config.jsonData,
     selectedPolicy: config.selectedPolicy

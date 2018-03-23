@@ -1,22 +1,24 @@
 {
-  "modelName": "Test Model",
+  "modelName": "World Test Model",
 
   "allowFileUpload": true,
 
   "choroplethString": "GnBu[5]",
-  "geoJsonFile": {
-    "name": "provinces.geojson",
-    "url": "assets/provinces.geojson"
+  "geoJson": {
+    "file": {
+      "name": "countries.geojson",
+      "url": "assets/countries.geojson"
+    },
+    "text": "ADMIN"
   },
   "jsonData": [{
-    "name": "Policy A",
+    "name": "Energy Demand",
     "file": {
-      "name": "dummydata.json", 
-      "url": "assets/dummydata.json"
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
     },
-    "geoAreaId": "regioFacetId",
-    "mappedProperty": "value"
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "total dom energy demand"
   }],
-  "selectedPolicy": "Policy A",
-  "timeSeries": [1,2,3,4,5,6,7,8,9,10]
+  "selectedPolicy": "Energy Demand"
 }

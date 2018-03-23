@@ -10,14 +10,21 @@ export function hexToRgb(hex) {
 export function findChoroplethMinMax() {
   var min = Infinity;
   var max = -Infinity;
+
+  var currIdx = config.timeSeries.indexOf(config.currentIndex);
+
   config.jsonData.forEach(function(policy) {
     if (policy.name = config.selectedPolicy) {
       for (var key in policy.data) {
-        if (policy.data[key][config.mappedProperty][config.currentIndex] < min) {
-          min = policy.data[key][config.mappedProperty][config.currentIndex];
+        var theNum = parseFloat(policy.data[key][config.mappedProperty][currIdx]);
+        if (isNaN(theNum)) {
+          debugger;
         }
-        if (policy.data[key][config.mappedProperty][config.currentIndex] > max) {
-          max = policy.data[key][config.mappedProperty][config.currentIndex];
+        if (theNum < min) {
+          min = theNum;
+        }
+        if (theNum > max) {
+          max = theNum;
         }
       }
     }
@@ -31,6 +38,7 @@ export function setChoroplethBuckets() {
     var numColors = config.choropleth.length;
     var range = config.choroplethDetails.max - config.choroplethDetails.min;
     var intervalSize = (range+0.0)/(numColors);
+    var currIdx = config.timeSeries.indexOf(config.currentIndex);
 
     config.choroplethRanges = [];
     for (var i = 0; i < numColors; i++) {
@@ -42,7 +50,7 @@ export function setChoroplethBuckets() {
       if (policy.name = config.selectedPolicy) {
         for (var key in policy.data) {
           var choroplethNum = numColors - 1;
-          var value = policy.data[key][config.mappedProperty][config.currentIndex];
+          var value = policy.data[key][config.mappedProperty][currIdx];
           if (value !== config.choroplethDetails.max) {
             choroplethNum = Math.floor((value - config.choroplethDetails.min)/intervalSize);
           }
@@ -56,75 +64,5 @@ export function setChoroplethBuckets() {
       max: Infinity
     };
     config.choroplethRanges = [];
-  }
-};
-
-export function buildChoroplethLegend() {
-  if (config.choropleth !== null && config.selectedPolicy !== '') {
-    $("[id=legend]").show();
-
-    var numColors = config.choropleth.length;
-    var sectionHeight = 20;
-    var totalHeight = sectionHeight*numColors + 10
-
-    $("[id=legend]").height(totalHeight);
-    $("[id=choropleth-legend]").html('');
-    for (var i = 0; i < numColors; i++) {
-      var div = $('<div/>', {
-        'class': 'choropleth-details',
-      });
-
-      var colorDiv = $('<div/>', {
-        'style': 'background-color:' + config.choropleth[i] + ';',
-        'class': 'choropleth-color'
-      });
-      div.append(colorDiv);
-
-      if (config.choroplethRanges && config.choroplethRanges.length == numColors+1) {
-        $("[id=legend]").width(130);
-        var textDiv = $('<div/>', {
-          'class': 'choropleth-text',
-          html: Math.round(config.choroplethRanges[i] * 100) / 100  + ' to ' + Math.round(config.choroplethRanges[i+1] * 100) / 100
-        });
-
-        div.append(textDiv);
-      } else {
-        $("[id=legend]").width(30);
-      }
-
-      $("[id=choropleth-legend]").append(div);
-
-      configureSlider();
-    }
-  } else {
-    $("[id=legend]").hide();
-    $("[id=slider]").hide();
-  }
-};
-
-export function configureSlider() {
-  if (config.timeSeries !== null && config.timeSeries.length > 1 ) {
-    $("[id=slider]").show();
-  }
-
-  if ($("[id=slider]").is(":visible") ) {
-    var legendLeft = parseInt($("[id=legend]").css('left').slice(0, -2));
-    var legendWidth = $("[id=legend]").width();
-    var viewportWidth = $("[id=map-viewport]").width();
-    var sliderLeft = legendLeft + legendWidth + legendLeft;
-    var sliderWidth = viewportWidth - sliderLeft - 25 - legendLeft * 2;
-    $("[id=slider]").css('width', sliderWidth + 'px');
-    $("[id=slider]").css('left', sliderLeft + 'px');
-  }
-};
-
-export function updateSlider() {
-  if ($("[id=slider]").is(":visible") ) {
-    var numPoints = config.timeSeries.length;
-    var min = config.timeSeries[0];
-    var max = config.timeSeries[numPoints-1];
-    $("[id=the-slider]").attr('min', min);
-    $("[id=the-slider]").attr('max', max);
-    $("[id=the-slider]").attr('value', config.currentIndex)
   }
 };

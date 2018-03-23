@@ -34,14 +34,15 @@ module.exports = {
         }
       },
       { /* SASS */
-        test: /\.scss$/,
-        include: [path.resolve(__dirname, 'src', 'style')],
+        test: /\.(s*)css$/,
+        include: [path.resolve(__dirname, 'src', 'style'), path.resolve(__dirname, 'node_modules', 'leaflet', 'dist')],
         use: extractPlugin.extract({
           use: [
             {
               loader: 'css-loader',
               options: {
-                sourceMap: true
+                sourceMap: true,
+                url: false
               }
             },
             {
@@ -70,12 +71,13 @@ module.exports = {
     new webpack.ProvidePlugin({
      $: "jquery",
      jQuery: "jquery",
-     Popper: ['popper.js', 'default'],
+     // Popper: ['popper.js', 'default'],
      config: ['configsrc', 'default']
    }),
    extractPlugin,
    new CopyWebpackPlugin([
-      { from: './src/assets/', to: 'assets/' }
+      { from: './src/assets/', to: 'assets/' },
+      // { from: './node_modules/leaflet/dist/images/', to: 'images/' }
     ], {}),
   ],
   output: {

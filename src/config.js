@@ -12,8 +12,13 @@ var modelConfig =  {
   choroplethRanges: [],
   currentIndex: 0,
 
-  geoJsonFile: {},
+  geoJson: {
+    file: {},
+    text: 'name'
+  },
   jsonData: [],
+  timeSeries: [],
+  
   selectedPolicy: '',
   geoAreaId: '',
   mappedProperty: '',

@@ -25,7 +25,7 @@ export function showFeatureDetails(feature) {
   $("[id=no-region-selected]").hide();
   $("[id=no-json-loaded]").hide();
 
-  $("[id=region-name]").html(feature.get('name'));
+  $("[id=region-name]").html(feature.properties.name);
   $("[id=region-selected]").show();
 
   showPrimaryChart(feature);
@@ -35,7 +35,7 @@ var showPrimaryChart = function(feature) {
   config.jsonData.forEach(function(policy) {
     if (policy.name === config.selectedPolicy) {
       policy.data.forEach(function(dataset) {
-        if (dataset[config.geoAreaId] == feature.get(config.geoAreaId)) {
+        if (dataset[config.geoAreaId] == feature.properties[config.geoAreaId]) {
           var dataVals = dataset[config.mappedProperty];
           var data = {
             labels: config.timeSeries,

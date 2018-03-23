@@ -1,21 +1,24 @@
 import choroplethColors from './util/colors.js';
 import { loadOptionalConfig, loadSettings } from './components/settings/settings.js';
-import { loadMap, updateMapData } from './components/mapview/map.js';
+// import { loadMap, updateMapData } from './components/mapview/map.js';
+import { loadMap, updateMapData, configureSlider } from './components/mapview/map.js';
 
 window.$ = window.jQuery = require('jquery');
-window.Popper = require('popper.js');
-require('bootstrap');
+
+window.Util = require('exports-loader?Util!bootstrap/js/dist/util'); // eslint-disable-line
+window.Modal = require('exports-loader?Modal!bootstrap/js/dist/modal'); // eslint-disable-line
 
 import './style/index.scss';
+import '../node_modules/leaflet/dist/leaflet.css';
 
 var throttled = false;
 var delay = 250;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // do your setup here
   loadMap();
   loadOptionalConfig();
   loadSettings();
+  configureSlider();
 
   var slider = document.getElementById("the-slider");
   slider.oninput = function() {
@@ -26,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('resize', function() {
   if (!throttled) {
-    // util.configureSlider();
+    configureSlider();
     throttled = true;
     setTimeout(function() {
       throttled = false;

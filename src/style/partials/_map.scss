@@ -1,45 +1,40 @@
 .map-view {
+
   .viewport {
     position:relative;
   }
-    #legend {
-      height:110px;
-      width:130px;
-      position:absolute;
-      left:0.5em;
-      bottom:0.5em;
-      z-index:10000;
-      background-color: rgba(255,255,255,0.6) ;
-      -moz-border-radius: 2px;
-      border-radius: 2px;
-      border: 1px solid black;
-
-      #choropleth-legend {
-        margin:5px;
-      }
-      .choropleth-details {
-        height:20px;
-
-        .choropleth-color {
-          height:100%;
-          width:20px;
-          float:left;
-          border: 1px solid black;
-          overflow:hidden;
-        }
-        .choropleth-text {
-          height:100%;
-          margin-left:25px;
-        }
-      }
-    }
 
     #slider {
       height: 15px;
       width: 500px;
       position: absolute;
       left: 150px;
-      bottom: 0.9em;
+      bottom: 25px;
       z-index: 10000;
     }
+
+    .leaflet-tooltip.my-labels {
+      background-color: transparent;
+      border: transparent;
+      box-shadow: none;
+    }
+
+  .legend {
+      line-height: 18px;
+      color: #555;
+      background-color: rgba(255,255,255,0.6) ;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+      border: 1px solid black;
+      padding:5px;
+
+  }
+  .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+  }
+
 }
