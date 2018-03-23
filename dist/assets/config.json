@@ -1,0 +1,24 @@
+{
+  "modelName": "World Test Model",
+
+  "allowFileUpload": true,
+
+  "choroplethString": "GnBu[5]",
+  "geoJson": {
+    "file": {
+      "name": "countries.geojson",
+      "url": "assets/countries.geojson"
+    },
+    "text": "ADMIN"
+  },
+  "jsonData": [{
+    "name": "Energy Demand",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "total dom energy demand"
+  }],
+  "selectedPolicy": "Energy Demand"
+}
