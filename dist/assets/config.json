@@ -1,0 +1,69 @@
+{
+  "modelName": "World Test Model",
+
+  "allowFileUpload": true,
+
+  "choroplethString": "GnBu[5]",
+  "geoJson": {
+    "file": {
+      "name": "countries.geojson",
+      "url": "assets/countries.geojson"
+    },
+    "text": "ADMIN"
+  },
+  "jsonData": [{
+    "name": "Energy Demand",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "total dom energy demand"
+  },
+  {
+    "name": "Population",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "total pop"
+  },
+  {
+    "name": "Energy Price Elasticity",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "GDP with energy price elasticity effects"
+  },
+  {
+    "name": "Oil Stocks and Reserves",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "reserves plus stocks oil"
+  },
+  {
+    "name": "Gas Reserves",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "reserves gas"
+  },
+  {
+    "name": "Renewables Consumption",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "pc renewables consumption of total energy consumption"
+  }],
+  "selectedPolicy": "Energy Demand"
+}
