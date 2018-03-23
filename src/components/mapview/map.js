@@ -43,6 +43,7 @@ var getFillColor = function(feature) {
     var hex = config.choropleth[choroplethNum];
     return hex
   } else {
+    console.log('bucket not found');
     return "#ffffff"
   }
 };

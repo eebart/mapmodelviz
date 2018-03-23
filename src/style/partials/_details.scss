@@ -4,4 +4,16 @@
     height:100%;
     @extend .centered-content;
   }
+
+  .details-text {
+    padding-bottom:10px;
+  }
+
+  .charts {
+    padding:10px;
+  }
+
+  .secondary-chart {
+    // margin:10px;
+  }
 }

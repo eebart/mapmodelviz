@@ -50,8 +50,8 @@ export function setChoroplethBuckets() {
       if (policy.name === config.selectedPolicy) {
         for (var key in policy.data) {
           var choroplethNum = numColors - 1;
-          var value = policy.data[key][config.mappedProperty][currIdx];
-          if (value !== config.choroplethDetails.max) {
+          var value = parseFloat(policy.data[key][config.mappedProperty][currIdx]);
+          if (value < config.choroplethDetails.max) {
             choroplethNum = Math.floor((value - config.choroplethDetails.min)/intervalSize);
           }
           policy.data[key]['choroplethNum'] = choroplethNum;
