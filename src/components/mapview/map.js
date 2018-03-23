@@ -30,7 +30,7 @@ var getFillColor = function(feature) {
     var choroplethNum = 0;
     var id = feature.properties[config.geoAreaId];
     config.jsonData.forEach(function(policy) {
-      if (policy.name = config.selectedPolicy) {
+      if (policy.name === config.selectedPolicy) {
         for (var key in policy.data) {
           if (policy.data[key][config.geoAreaId] == id) {
             choroplethNum = policy.data[key]['choroplethNum'];
@@ -66,7 +66,7 @@ export function updateMapData() {
 export function setNewActivePolicy(newPolicyName) {
   config.selectedPolicy = newPolicyName;
   config.jsonData.forEach(function(policy) {
-    if (policy.name = newPolicyName) {
+    if (policy.name === newPolicyName) {
       config.geoAreaId = policy.geoAreaId;
       config.mappedProperty = policy.mappedProperty;
     }

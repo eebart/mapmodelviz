@@ -5396,6 +5396,10 @@ a.text-dark:hover, a.text-dark:focus {
 #no-policies {
   margin-top: 10px; }
 
+#policies-exist {
+  max-height: 220px;
+  overflow: scroll; }
+
 .all-color-selection {
   max-height: 500px;
   overflow: scroll; }

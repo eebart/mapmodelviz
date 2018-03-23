@@ -14,7 +14,7 @@ export function findChoroplethMinMax() {
   var currIdx = config.timeSeries.indexOf(config.currentIndex);
 
   config.jsonData.forEach(function(policy) {
-    if (policy.name = config.selectedPolicy) {
+    if (policy.name === config.selectedPolicy) {
       for (var key in policy.data) {
         var theNum = parseFloat(policy.data[key][config.mappedProperty][currIdx]);
         if (isNaN(theNum)) {
@@ -47,7 +47,7 @@ export function setChoroplethBuckets() {
     config.choroplethRanges[i] = config.choroplethDetails.max;
 
     config.jsonData.forEach(function(policy) {
-      if (policy.name = config.selectedPolicy) {
+      if (policy.name === config.selectedPolicy) {
         for (var key in policy.data) {
           var choroplethNum = numColors - 1;
           var value = policy.data[key][config.mappedProperty][currIdx];
