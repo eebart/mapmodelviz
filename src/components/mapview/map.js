@@ -11,23 +11,34 @@ function baseStyle(feature) {
   return {
     "color": "#000000",
     fillColor: "#ffffff",
-    "weight": 2,
-    "opacity": 0.4
+    "weight": 0,
+    "opacity": 0
+  }
+};
+
+function blankStyle(feature) {
+  return {
+    "color": "#000000",
+    fillColor: "#ffffff",
+    "weight": 0,
+    "opacity": 0
   }
 };
 
 function choroStyle(feature) {
+  var style = getFillColor(feature);
+
   return {
-    fillColor: getFillColor(feature),
-    weight: 1,
-    opacity: 1,
+    fillColor: style.fillColor,
+    weight: style.weight,
+    opacity: style.opacity,
     color: '#000000',
-    fillOpacity: 0.4
+    fillOpacity: style.fillOpacity
   };
 };
 var getFillColor = function(feature) {
   if (config.choropleth !== null && config.selectedPolicy !== '') {
-    var choroplethNum = 0;
+    var choroplethNum = -1;
     var id = feature.properties[config.geoAreaId];
     config.jsonData.forEach(function(policy) {
       if (policy.name === config.selectedPolicy) {
@@ -39,9 +50,22 @@ var getFillColor = function(feature) {
         }
       }
     });
-    choroplethNum = choroplethNum ? choroplethNum : 0;
-    var hex = config.choropleth[choroplethNum];
-    return hex
+    // choroplethNum = choroplethNum ? choroplethNum : -1;
+    if (choroplethNum == -1) {
+      return {
+        fillColor: "#ffffff",
+        weight:0,
+        opacity:0,
+        fillOpacity: 0
+      }
+    } else {
+      return {
+        fillColor: config.choropleth[choroplethNum],
+        opacity:1,
+        weight:1,
+        fillOpacity: 0.4
+      };
+    }
   } else {
     console.log('bucket not found');
     return "#ffffff"
@@ -72,18 +96,25 @@ export function setNewActivePolicy(newPolicyName) {
       config.mappedProperty = policy.mappedProperty;
     }
   });
+
+  // if (geoJSONLayer) {
+  //   console.log('reset');
+  //     geoJSONLayer.setStyle(baseStyle);
+  // }
 };
 
 function highlightFeature(e) {
   var layer = e.target;
 
-  layer.setStyle({
-    weight: 2,
-    fillOpacity: 0.9
-  });
+  if (layer.options.opacity > 0) {
+    layer.setStyle({
+      weight: 2,
+      fillOpacity: 0.9
+    });
 
-  if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-    layer.bringToFront();
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+      layer.bringToFront();
+    }
   }
 };
 function resetHighlight(e) {
@@ -93,20 +124,24 @@ function resetHighlight(e) {
 };
 function selectFeature(e) {
   var layer = e.target;
-  if (layer === selectedFeature) {
-    geoJSONLayer.resetStyle(e.target);
-    selectedFeature = null;
-    details.hideFeatureDetails();
-  } else {
-    if (selectedFeature !== null) {
-      geoJSONLayer.resetStyle(selectedFeature)
+  if (layer.options.opacity > 0) {
+
+    if (layer === selectedFeature) {
+      geoJSONLayer.resetStyle(e.target);
+      selectedFeature = null;
+      details.hideFeatureDetails();
+    } else {
+      if (selectedFeature !== null) {
+        geoJSONLayer.resetStyle(selectedFeature)
+      }
+      layer.setStyle({
+        weight: 2,
+        fillOpacity: 0.9
+      });
+      selectedFeature = layer;
+      details.showFeatureDetails(selectedFeature.feature);
     }
-    layer.setStyle({
-      weight: 2,
-      fillOpacity: 0.9
-    });
-    selectedFeature = layer;
-    details.showFeatureDetails(selectedFeature.feature);
+    
   }
 };
 function onEachFeature(feature, layer) {
@@ -118,6 +153,11 @@ function onEachFeature(feature, layer) {
 };
 
 export function addGeoJSONLayer() {
+  if (geoJSONLayer) {
+    console.log('reset2');
+      geoJSONLayer.setStyle(baseStyle);
+  }
+
   if (jQuery.isEmptyObject(config.geoJson.file)) {
     return;
   }
@@ -166,9 +206,17 @@ function buildChoroplethLegend() {
       var div = L.DomUtil.create('div', 'info legend');
 
       for (var i = 0; i < config.choropleth.length; i++) {
+        var lower = config.choroplethRanges[i]
+        if (lower > 10) {
+          lower = util.numberWithCommas(Math.round(lower * 100) / 100);
+        }
+        var upper = config.choroplethRanges[i + 1]
+        if (upper > 10) {
+          upper = util.numberWithCommas(Math.round(upper * 100) / 100);
+        }
         div.innerHTML +=
           '<i style="background:' + config.choropleth[i] + '"></i> ' +
-          (Math.round(config.choroplethRanges[i] * 100) / 100) + ' to ' + (Math.round(config.choroplethRanges[i + 1] * 100) / 100) + '<br>';
+          lower + ' to ' + upper + '<br>';
       }
 
       return div;

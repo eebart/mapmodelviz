@@ -1,4 +1,8 @@
 var Chartist = require('chartist');
+require('chartist-plugin-tooltip');
+
+import { numberWithCommas } from '../../util/util.js';
+
 
 var detailshtml = require('./details.html');
 
@@ -31,20 +35,20 @@ export function showFeatureDetails(feature) {
   $("[id=region-selected]").show();
 
   showPrimaryChart(feature);
-  showSecondaryChart(feature);
+  showSecondaryCharts(feature);
 };
 
+
+var plugins = [
+  Chartist.plugins.tooltip({
+      valueTransform: function (value) {
+          return numberWithCommas(value);
+      }
+  })
+]
 var options = {
-  // Don't draw the line chart points
-  showPoint: false,
-  // Disable line smoothing
-  // lineSmooth: false,
-  // X-Axis specific configuration
+  // showPoint: false,
   axisX: {
-    // We can disable the grid for this axis
-    // showGrid: false,
-    // and also don't show the label
-    // showLabel: false
     labelInterpolationFnc: function(value,  index) {
       var modVal = Math.floor(config.timeSeries.length / 10);
       return index % modVal === 0 ? value : null;
@@ -52,19 +56,37 @@ var options = {
   },
   // Y-Axis specific configuration
   axisY: {
-    // Lets offset the chart a bit from the labels
-    // offset: 60,
-    // The label interpolation function enables you to modify the values
-    // used for the labels on each axis. Here we are converting the
-    // values into million pound.
     labelInterpolationFnc: function(value) {
       if (value > 1000000) {
-        var rounded = (Math.round(value/100000 * 100) / 100)
+        var rounded = (Math.round(value/1000000 * 100) / 100)
         return numberWithCommas(rounded) + 'm';
       }
       return numberWithCommas(value);
     }
-  }
+  },
+  plugins: plugins
+};
+
+var secondary = {
+  showPoint: true,
+  offset: 0,
+  axisX: {
+    showGrid: false,
+    // showLabel: false,
+    labelInterpolationFnc: function(value,  index) {
+      if (index === 0 || index === (config.timeSeries.length - 1) || index === Math.round(config.timeSeries.length/2)) {
+        return value;
+      } else {
+        return false;
+      }
+    }
+  },
+  // Y-Axis specific configuration
+  axisY: {
+    offset: 0,
+    showLabel: false
+  },
+  plugins: plugins
 };
 
 var showPrimaryChart = function(feature) {
@@ -86,6 +108,8 @@ var showPrimaryChart = function(feature) {
   });
 };
 
+var colorLabels = ['b','c','d','e','f','g','h','i','j','k','l','m','n','o'];
+
 var showSecondaryCharts = function(feature) {
   var series = []
   var datas = []
@@ -95,7 +119,7 @@ var showSecondaryCharts = function(feature) {
         if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
           for (var key in dataset) {
             if (key != config.mappedProperty && Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length) {
-              series.push(dataset[key])
+              // series.push(dataset[key])
               var data = {
                 labels: config.timeSeries,
                 series:[dataset[key]],
@@ -109,15 +133,27 @@ var showSecondaryCharts = function(feature) {
     }
   });
 
-  for(var chart in datas) {
-    new Chartist.Line('#secondary-chart', data, options);
-    break;
+  var charts = $('#secondary-charts')
+  charts.html('');
+
+  var i;
+  for (i = 0; i < datas.length; i++) {
+    var colorNum = i % colorLabels.length;
+    var div = '<div class="col-lg-6 col-sm-12 secondary-chart"><div>';
+    div += '<div class="chart-title-secondary"><div class="chart-title-content">' + datas[i].title + '</div></div>'
+    div += '<div id="chart-' + i + '" class="secondary-chart ct-chart ct-major-third ct-series-' + colorLabels[colorNum] + '"></div>';
+    div += '</div></div>';
+    charts.append(div);
   }
+
+  var maxHeight = 0;
+  $(".chart-title-secondary").each(function(){
+     if ($(this).height() > maxHeight) { maxHeight = $(this).height(); }
+  });
+  $(".chart-title-secondary").height(maxHeight);
+
+  for (i = 0; i < datas.length; i++) {
+    new Chartist.Line('#chart-'+i, datas[i], secondary);
+  }
+
 };
-
-
-const numberWithCommas = (x) => {
-  var parts = x.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}

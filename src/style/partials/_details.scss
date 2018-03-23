@@ -13,7 +13,30 @@
     padding:10px;
   }
 
+  .primary-chart {
+    padding-bottom:25px;
+  }
+
+  .chart-title {
+    width:100%;
+    text-align: center;
+    font-size:0.8em;
+  }
+
+  .chart-title-secondary {
+    @extend .chart-title;
+    display:flex;
+
+    .chart-title-content {
+      margin:auto;
+    }
+  }
+
+  .chart-title-primary {
+    @extend .chart-title;
+  }
+
   .secondary-chart {
-    // margin:10px;
+    padding-bottom:25px;
   }
 }

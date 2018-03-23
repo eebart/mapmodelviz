@@ -1,5 +1,5 @@
 import choroplethColors from '../../util/colors.js';
-import { updateMapData, addGeoJSONLayer } from '../mapview/map.js';
+import { updateMapData, addGeoJSONLayer, setNewActivePolicy } from '../mapview/map.js';
 import { loadDetails } from '../details/details.js';
 
 var settingshtml = require('./settings.html');
@@ -109,7 +109,7 @@ var loadSettings = function() {
     buildModelDataDisplay(config.jsonData, config.selectedPolicy);
 
     $('#policy-row-add').on('click', 'tr', function(){
-      setNewActivePolicy(this);
+      updateActiveRow(this);
     });
   });
 };
@@ -178,7 +178,7 @@ var addNewPolicy = function() {
   newPolicies.push(newPolicy);
   buildNewRow(newPolicy, false);
 };
-var setNewActivePolicy = function(row) {
+var updateActiveRow = function(row) {
   $(row).addClass('table-primary').siblings().removeClass('table-primary');
   pendingActivePolicy = row.children[0].innerText;
 };
@@ -189,6 +189,7 @@ var updateMapPolicies = function() {
   if (pendingActivePolicy !== '' && config.selectedPolicy !== pendingActivePolicy) {
     config.selectedPolicy = pendingActivePolicy;
     displayActivePolicy(config.selectedPolicy);
+    setNewActivePolicy(config.selectedPolicy);
 
     loadModelData();
   }
