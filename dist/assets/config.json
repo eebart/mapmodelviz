@@ -1,0 +1,60 @@
+{
+  "modelName": "World Test Model",
+  "allowFileUpload": true,
+  "activePolicyName": "Energy Demand",
+
+  "jsonData": [{
+    "name": "Energy Demand",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "total dom energy demand",
+    "choroplethString": "GnBu[5]",
+    "displayStatus": "primary",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/countries.geojson"
+      },
+      "text": "ADMIN"
+    }
+  },
+  {
+    "name": "Population",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "total pop",
+    "choroplethString": "GnBu[5]",
+    "displayStatus": "off",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/countries.geojson"
+      },
+      "text": "ADMIN"
+    }
+  },
+  {
+    "name": "Energy Price Elasticity",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "ISO_A3",
+    "mappedProperty": "GDP with energy price elasticity effects",
+    "choroplethString": "GnBu[5]",
+    "displayStatus": "off",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/countries.geojson"
+      },
+      "text": "ADMIN"
+    }
+  }]
+}
