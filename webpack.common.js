@@ -54,7 +54,7 @@ module.exports = {
           ],
           fallback: 'style-loader'
         })
-      },
+      }
     ]
   },
   resolve: {
@@ -78,6 +78,7 @@ module.exports = {
    new CopyWebpackPlugin([
       { from: './src/assets/', to: 'assets/' },
       // { from: './node_modules/leaflet/dist/images/', to: 'images/' }
+      { from: './src/style/img/', to: 'img/' }
     ], {}),
   ],
   output: {

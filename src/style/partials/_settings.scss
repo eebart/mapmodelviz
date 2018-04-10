@@ -17,9 +17,13 @@
   }
 }
 
+.disabled-file-selector {
+  background-color: $input-disabled-bg;
+}
+
 .choropleth-display {
   width:100%;
-  height:20px;
+  height:100%;
   .row{
     width:100%;
     height:100%;
@@ -41,11 +45,17 @@
   margin-top:10px;
 }
 
-#policies-exist {
-  max-height: 220px;
-  overflow: scroll;
-
+#policies-body {
+  tr {
+    cursor:pointer;
+  }
 }
+
+// #policies-exist {
+//   max-height: 220px;
+//   overflow: scroll;
+//
+// }
 
 .all-color-selection {
   max-height: 500px;

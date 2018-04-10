@@ -17,24 +17,27 @@ export function findChoroplethMinMax() {
   var min = Infinity;
   var max = -Infinity;
 
-  var currIdx = config.timeSeries.indexOf(config.currentIndex);
+  if (config.activePolicy === null) {
+    config.choroplethDetails = {
+      min: -Infinity,
+      max: Infinity
+    };
+    return;
+  }
 
-  config.jsonData.forEach(function(policy) {
-    if (policy.name === config.selectedPolicy) {
-      for (var key in policy.data) {
-        var theNum = parseFloat(policy.data[key][config.mappedProperty][currIdx]);
-        if (isNaN(theNum)) {
-          debugger;
-        }
-        if (theNum < min) {
-          min = theNum;
-        }
-        if (theNum > max) {
-          max = theNum;
-        }
-      }
+  var currIdx = config.timeSeries.indexOf(config.currentIndex);
+  for (var key in config.activePolicy.data) {
+    var theNum = parseFloat(config.activePolicy.data[key][config.mappedProperty][currIdx]);
+    if (isNaN(theNum)) {
+      debugger;
     }
-  });
+    if (theNum < min) {
+      min = theNum;
+    }
+    if (theNum > max) {
+      max = theNum;
+    }
+  }
   config.choroplethDetails.min = min;
   config.choroplethDetails.max = max;
 }
@@ -51,19 +54,14 @@ export function setChoroplethBuckets() {
       config.choroplethRanges[i] = config.choroplethDetails.min + intervalSize*i;
     }
     config.choroplethRanges[i] = config.choroplethDetails.max;
-
-    config.jsonData.forEach(function(policy) {
-      if (policy.name === config.selectedPolicy) {
-        for (var key in policy.data) {
-          var choroplethNum = numColors - 1;
-          var value = parseFloat(policy.data[key][config.mappedProperty][currIdx]);
-          if (value < config.choroplethDetails.max) {
-            choroplethNum = Math.floor((value - config.choroplethDetails.min)/intervalSize);
-          }
-          policy.data[key]['choroplethNum'] = choroplethNum;
-        }
+    for (var key in config.activePolicy.data) {
+      var choroplethNum = numColors - 1;
+      var value = parseFloat(config.activePolicy.data[key][config.mappedProperty][currIdx]);
+      if (value < config.choroplethDetails.max) {
+        choroplethNum = Math.floor((value - config.choroplethDetails.min)/intervalSize);
       }
-    });
+      config.activePolicy.data[key]['choroplethNum'] = choroplethNum;
+    }
   } else {
     config.choroplethDetails = {
       min: -Infinity,

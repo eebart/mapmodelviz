@@ -1,8 +1,16 @@
-
 var modelConfig =  {
   modelName: '',
-
   allowFileUpload: true,
+
+  jsonData: [],
+
+  activePolicy: null,
+  activePolicyName: '',
+  geoAreaId: '',
+  geoTextProperty: '',
+  mappedProperty: '',
+  timeSeries: [],
+  currentIndex: 0,
 
   choropleth: null,
   choroplethDetails: {
@@ -10,18 +18,6 @@ var modelConfig =  {
     max: Infinity
   },
   choroplethRanges: [],
-  currentIndex: 0,
-
-  geoJson: {
-    file: {},
-    text: 'name'
-  },
-  jsonData: [],
-  timeSeries: [],
-  
-  selectedPolicy: '',
-  geoAreaId: '',
-  mappedProperty: '',
 
   map: null
 };

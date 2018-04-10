@@ -1,21 +1,22 @@
 import choroplethColors from '../../util/colors.js';
-import { updateMapData, addGeoJSONLayer, setNewActivePolicy } from '../mapview/map.js';
+import { updateMapData, addGeoJSONLayer } from '../mapview/map.js';
 import { loadDetails } from '../details/details.js';
 
+var policieshtml = require('./policies.html');
 var settingshtml = require('./settings.html');
 var nameselector = require('./nameSelector.html');
 var modelselector = require('./modelSelector.html');
 var exportselector = require('./exportSelector.html');
 var colorselector = require('./colorSelector.html');
 
-var newPolicies = [];
-var pendingActivePolicy = '';
 var pendingNewColor = '';
+var pendingChoroplethString = '';
+var openDataset = null;
+var pendingChoropleth = null;
 
-var loadOptionalConfig = function() {
+var loadOptionalConfigAndSettings = function() {
   var configFileURL = 'assets/config.json';
   $.getJSON(configFileURL, function(json) {
-    json.choropleth = findChoropleth(json.choroplethString);
     Object.assign(config, json);
     loadModelData();
   })
@@ -38,85 +39,118 @@ var findChoropleth = function(choroplethString) {
   return null;
 }
 
+var btnGroupHandlerPrevent = function(event) {
+  event.preventDefault();
+  return false;
+};
+var btnGroupHandlerUpdate = function(event) {
+  var target = event.target;
+  if (!target.id.includes('dataset')) {
+    var desc = target.id.split('_');
+    updateDatasetDisplay(desc[0], desc[2]);
+  }
+};
+
 var loadSettings = function() {
-  $("#settings-content").html(settingshtml);
+  $("#settings-content").html(policieshtml);
 
   $("#name-popup").html(nameselector);
-  $("#color-popup").html(colorselector);
   $("#model-popup").html(modelselector);
   $("#export-popup").html(exportselector);
+  $("#color-popup").html(colorselector);
 
-  displayCurrentChoropleth(config.choropleth);
-  displayActivePolicy(config.selectedPolicy);
+  /***********************
+   * Model Name Stuff
+   ***********************/
   displayModelName(config.modelName);
-  displayGeoJsonFile(config.geoJson.file);
-
   $("[id=name-change-save]").click(function() {
     saveModelName();
   });
-  $("[id=color-number-dropdown]").change(function() {
-    buildChoroplethSelection();
-  });
-  $("[id=choropleth-change-save]").click(function() {
-    saveChoroplethSelection();
-  });
 
+  /***********************
+   * Data related to model data sets
+   ***********************/
+  displayModelData();
+
+  $('.btn-group').on("click", ".disabled", btnGroupHandlerPrevent);
+  $('.btn-group').on("click", btnGroupHandlerUpdate);
+
+  if (config.allowFileUpload) {
+    $("[id=dataset-add-btn]").on('click', function(){
+        newDataset();
+    });
+
+    $('#policies-body').on('click', 'tr', function(event){
+      var target = $(event.target)[0];
+      if (target.tagName === 'TD' || target.tagName === 'TR') {
+        editDataset(this);
+      }
+    });
+    $("[id=policy-data-save]").click(function() {
+      saveModelDetails();
+    });
+    $("[id=policy-data-add]").click(function() {
+      addModelDetails();
+    });
+
+    $("[id=dataset-add-btn]").show();
+  } else {
+    $('#policies-body').on('click', 'tr', function(event){
+      var target = $(event.target)[0];
+      if (target.tagName === 'TD' || target.tagName === 'TR') {
+        viewDataset(this);
+      }
+    });
+    $("[id=policy-data-ok]").click(function() {
+      saveModelDetails_OK();
+    });
+
+    $("[id=dataset-add-btn]").hide();
+  }
+
+  /***********************
+   * File Management
+   ***********************/
   $("[id=policy-file-selector]").change(function() {
     $("[id=policy-file-selected-name]").html(this.files[0].name);
   });
-
-  $("[id=new-policy-button]").click(function() {
-    addNewPolicy();
+  $("[id=geojson-file-selector]").change(function() {
+    $("[id=geojson-file-selected-name]").html(this.files[0].name);
   });
 
-  $("[id=policy-data-save]").click(function() {
-    updateMapPolicies();
-  });
-  $("[id=export-save]").click(function() {
-    saveConfigAsFile();
-  });
-
-  if(config.allowFileUpload) {
-    $("#add-new-policy").show();
-    $("[id=geojson-file-selector]").change(function() {
-      config.geoJson = this.files[0];
-      displayGeoJsonFile(config.geoJson.file);
-      updateMapData();
-    });
-
-    $("[id=change-color-btn]").click(function() {
-      buildChoroplethSelection();
-
-      $('#color-select-add').on('click', 'tr', function(){
-        selectNewChoropleth(this);
-      });
-    });
-    $("[id=export-config-btn]").click(function() {
+  /***********************
+   * Exporting config data
+   ***********************/
+  if (config.allowFileUpload) {
+    $("[id=export-save]").click(function() {
       saveConfigAsFile();
     });
   } else {
-    $("#add-new-policy").hide();
-
-    $("[id=geojson-file-selector]").prop('disabled', true);
-    $("[id=geojson-upload-btn]").addClass('disabled');
-
-    $("[id=name-change-btn]").prop('disabled', true);
-    $("[id=change-color-btn]").prop('disabled', true);
-    $("[id=export-config-btn]").prop('disabled', true);
+    $("[id=export-config-btn]").hide();
   }
 
-  $("[id=manage-policies]").click(function() {
-    buildModelDataDisplay(config.jsonData, config.selectedPolicy);
-
-    $('#policy-row-add').on('click', 'tr', function(){
-      updateActiveRow(this);
+  /***********************
+   * Choropleth Configuration
+   ***********************/
+  if (config.allowFileUpload) {
+    $("#change-color-btn").click(function() {
+      buildChoroplethSelection();
     });
-  });
+    $('#color-select-add').on('click', 'tr', function(){
+      selectNewChoropleth(this);
+    });
+    $("#color-number-dropdown").change(function() {
+      buildChoroplethSelection();
+    });
+    $("#choropleth-change-save").click(function() {
+      saveChoroplethSelection();
+    });
+  }
 };
 
+/** Model Name Configuration **/
 var displayModelName = function(modelName) {
-  $("[id=new_model_name]").value = modelName; // model name in popup
-  $("#current-model-name").html(modelName); // model name in settings panel
+  $("#new_model_name").val(modelName); // model name in popup
   if (modelName === '') {
     modelName = 'MapModelViz';
   }
@@ -128,94 +162,362 @@ var saveModelName = function() {
   displayModelName(modelName);
 };
 
-/** GeoJSON Settings **/
-var displayGeoJsonFile = function(file) {
-  $("[id=geojson-file]").html(file.name);
-};
-
-/** Model Data Settings **/
-var displayActivePolicy = function(activePolicy) {
-  $("#current-active-policy").html(activePolicy);
-};
-var buildModelDataDisplay = function(jsonData, activePolicy) {
-  newPolicies = [];
-  pendingActivePolicy = '';
-  $("#policy-row-add tr").remove();
-
-  if (jsonData.length == 0) {
+/** Main Model Data Table **/
+var displayModelData = function() {
+  if (config.jsonData.length == 0) {
     $("[id=no-policies]").show();
-    $("[id=policies-exist]").hide();
+    $("[id=policies-list]").hide();
   } else {
     $("[id=no-policies]").hide();
-    $("[id=policies-exist]").show();
+    $("[id=policies-list]").show();
 
-    jsonData.forEach(function(policy) {
-      var isActive = policy.name === activePolicy;
-      buildNewRow(policy, isActive);
+    config.jsonData.forEach(function(policy, index) {
+      $("#policies-body").append(buildRow(policy, index));
     });
   }
+}
+var addModelDataRow = function(newDataset) {
+  $("#policies-body").append(buildRow(newDataset, config.jsonData.length-1));
 };
-var buildNewRow = function(policy, isActive) {
+var buildRow = function(dataset, index) {
   var divContent = '<tr>';
-  if (isActive) {
-    divContent = '<tr class="table-primary">';
-  }
-  divContent += '<td>' + policy.name + '</td>';
-  divContent += '<td>' + policy.file.name + '</td>';
-  divContent += '<td>' + policy.mappedProperty + '</td>';
-  divContent += '<td>' + policy.geoAreaId + '</td>';
+  divContent += '<td style="vertical-align:middle;">' + dataset.name + '</td>';
+  divContent += '<td>' + displayButtons(dataset, index) + '</td>';
   divContent += '</tr>';
-  $("#policy-row-add").append(divContent);
+  return divContent;
 };
-var addNewPolicy = function() {
-  var newPolicy = {
-    name: $("[id=new_policy_name]")[0].value,
-    data: null,
-    file: $("[id=policy-file-selector]")[0].files[0],
-    geoAreaId: $("[id=geo_id_property]")[0].value,
-    mappedProperty: $("[id=mapped_property_name]")[0].value
-  };
-  newPolicies.push(newPolicy);
-  buildNewRow(newPolicy, false);
-};
-var updateActiveRow = function(row) {
-  $(row).addClass('table-primary').siblings().removeClass('table-primary');
-  pendingActivePolicy = row.children[0].innerText;
-};
-var updateMapPolicies = function() {
-  if (newPolicies.length !== 0) {
-    config.jsonData.push(newPolicies);
-  }
-  if (pendingActivePolicy !== '' && config.selectedPolicy !== pendingActivePolicy) {
-    config.selectedPolicy = pendingActivePolicy;
-    displayActivePolicy(config.selectedPolicy);
-    setNewActivePolicy(config.selectedPolicy);
+var displayButtons = function(dataset, index) {
+  var div = '<div class="btn-group btn-group-toggle" data-toggle="buttons">';
 
-    loadModelData();
+  if (dataset.displayStatus === 'primary') {
+    div += buildButton(index,'Primary','active','');
+    div += buildButton(index,'Secondary','','disabled');
+    div += buildButton(index,'Off','','disabled');
+  } else if (dataset.displayStatus === 'secondary') {
+    div += buildButton(index,'Primary','','');
+    div += buildButton(index,'Secondary','active','');
+    div += buildButton(index,'Off','','');
+  } else {
+    div += buildButton(index,'Primary','','');
+    div += buildButton(index,'Secondary','','');
+    div += buildButton(index,'Off','active','');
+  }
+  div += '</div>'
+
+  return div;
+}
+var buildButton = function(id, displayType, activeClass, disabledClass) {
+  var div = '<label id="' + id + '_display_' + displayType.toLowerCase() + '_label" class="btn btn-secondary btn-sm ' + activeClass + ' ' + disabledClass + '">';
+  div +=      '<input type="radio" name="options" id="' + id + '_display_' + displayType.toLowerCase() + '" autocomplete="off" checked> ' + displayType;
+  div +=    '</label>';
+  return div;
+}
+
+var newDataset = function() {
+  $('#model_modal_title').html('Add Model Data Configuration');
+
+  //TODO reset all form fields
+  $("#new_policy_name").val('');
+  $("#policy-file-selected-name").text('Choose File');
+  $("#geojson-file-selected-name").text('Choose File');
+  $("#geo_id_property").val('');
+  $("#mapped_property_name").val('');
+  $("#geo_display_property").val('');
+  $("#current-color-settings").html('');
+
+  $("#dataset_primary").checked = false;
+  $("#dataset_primary_label").removeClass('active');
+  $("#dataset_secondary").checked = false;
+  $("#dataset_secondary_label").removeClass('active');
+  $("#dataset_secondary_label").removeClass('disabled');
+  $("#dataset_off").checked = false;
+  $("#dataset_off_label").removeClass('active');
+  $("#dataset_off_label").removeClass('disabled');
+
+  $("#policy-data-add").show();
+  $("#policy-data-save").hide();
+  $("#policy-data-ok").hide();
+
+  $('#model-modal').modal('show');
+}
+var editDataset = function(row) {
+  var dataToEdit = row.children[0].innerText;
+
+  $('#model_modal_title').html('Edit Model Data Configuration');
+
+  $('#current-color-settings-holder').addClass('col-sm-6');
+  $('#current-color-settings-holder').removeClass('col-sm-9');
+
+  $("#geojson-file-selected-name").removeClass('disabled-file-selector');
+  $("#policy-file-selected-name").removeClass('disabled-file-selector');
+
+  $("#policy-data-add").hide();
+  $("#policy-data-save").show();
+  $("#policy-data-ok").hide();
+
+  loadModelDetails(dataToEdit);
+
+  $('#model-modal').modal('show');
+}
+var viewDataset = function(row) {
+  var dataToEdit = row.children[0].innerText;
+
+  $('#model_modal_title').html('View Model Data Configuration');
+
+  $("#new_policy_name").attr("disabled", "disabled");
+  $("#geojson-file-selector").attr("disabled", "disabled");
+  $("#policy-file-selector").attr("disabled", "disabled");
+  $("#geojson-file-selected-name").addClass('disabled-file-selector');
+  $("#policy-file-selected-name").addClass('disabled-file-selector');
+
+  $("#geo_id_property").attr("disabled", "disabled");
+  $("#mapped_property_name").attr("disabled", "disabled");
+  $("#geo_display_property").attr("disabled", "disabled");
+
+  $("#change-color-btn").hide();
+  $('#current-color-settings-holder').removeClass('col-sm-6');
+  $('#current-color-settings-holder').addClass('col-sm-9');
+
+  $("#policy-data-add").hide();
+  $("#policy-data-save").hide();
+  $("#policy-data-ok").show();
+
+  loadModelDetails(dataToEdit);
+
+  $('#model-modal').modal('show');
+}
+var loadModelDetails = function(dataToEdit) {
+  for (var i = 0; i < config.jsonData.length; i++) {
+    if (config.jsonData[i].name === dataToEdit) {
+      openDataset = config.jsonData[i]
+      break;
+    }
+  }
+
+  $("#new_policy_name").val(openDataset.name);
+  $("#policy-file-selected-name").text(openDataset.file.name);
+  $("#geojson-file-selected-name").text(openDataset.geoJSON.file.name);
+  $("#geo_id_property").val(openDataset.geoAreaId);
+  $("#mapped_property_name").val(openDataset.mappedProperty);
+  $("#geo_display_property").val(openDataset.geoJSON.text);
+
+  var choropleth = findChoropleth(openDataset.choroplethString);
+  $("#current-color-settings").html(buildChoroplethDisplay(choropleth));
+
+  pendingChoroplethString = openDataset.choroplethString;
+  pendingChoropleth = choropleth;
+
+  if (openDataset.displayStatus === 'primary') {
+    $("#dataset_primary").checked = true;
+    $("#dataset_primary_label").addClass('active');
+
+    $("#dataset_secondary_label").addClass("disabled");
+    $("#dataset_off_label").addClass("disabled");
+  } else if (openDataset.displayStatus === 'secondary') {
+    $("#dataset_secondary").checked = true;
+    $("#dataset_secondary_label").addClass('active');
+
+    $("#dataset_primary_label").removeClass("active");
+    $("#dataset_off_label").removeClass("active");
+
+    $("#dataset_secondary_label").removeClass("disabled");
+    $("#dataset_off_label").removeClass("disabled");
+  } else {
+    $("#dataset_off").checked = true;
+    $("#dataset_off_label").addClass('active');
+
+    $("#dataset_primary_label").removeClass("active");
+    $("#dataset_secondary_label").removeClass("active");
+
+    $("#dataset_secondary_label").removeClass("disabled");
+    $("#dataset_off_label").removeClass("disabled");
+
   }
 };
-var loadModelData = function() {
-  if (config.jsonData.length === 0) {
-    addGeoJSONLayer();
-  }
 
-  config.jsonData.forEach(function(dataset){
-    if (dataset.name === config.selectedPolicy) {
-      config.geoAreaId = dataset.geoAreaId;
-      config.mappedProperty = dataset.mappedProperty;
-
-      var url = dataset.file.url;
-      if (!url || url === '') {
-        url = URL.createObjectURL(dataset.file);
+/** Model Data Changes **/
+var saveModelDetails_OK = function() {
+  var displayStatus = $('#dataset-display label.active input').val();
+  if (openDataset.displayStatus !== displayStatus) {
+    // openDataset.displayStatus = displayStatus;
+    for (var i = 0; i < config.jsonData.length; i++) {
+      if (config.jsonData[i].name === openDataset.name) {
+        selectDisplayButton(i,displayStatus);
+        updateDatasetDisplay(i,displayStatus);
+        return;
       }
-      loadCSVData(dataset, url);
+    }
+  }
+  openDataset = null;
+};
+var saveModelDetails = function() {
+  var displayStatus = $('#dataset-display label.active input').val();
 
-    } else {
-      dataset.data = null;
+  var updatedDataset = buildDataset();
+
+  var changed = false;
+  if (openDataset.name !== updatedDataset.name) {
+    changed = true;
+    openDataset.name = updatedDataset.name;
+  }
+  if (updatedDataset.file !== undefined && updatedDataset.file !== null && openDataset.file.name !== updatedDataset.file.name) {
+    changed = true;
+    openDataset.file = updatedDataset.file;
+  }
+  if (updatedDataset.geoJSON.file !== undefined && updatedDataset.geoJSON.file !== null && openDataset.geoJSON.file.name !== updatedDataset.geoJSON.file.name) {
+    changed = true;
+    openDataset.geoJSON.file = updatedDataset.geoJSON.file;
+  }
+  if (openDataset.geoAreaId !== updatedDataset.geoAreaId) {
+    changed = true;
+    openDataset.geoAreaId = updatedDataset.geoAreaId;
+  }
+  if (openDataset.mappedProperty !== updatedDataset.mappedProperty) {
+    changed = true;
+    openDataset.mappedProperty = updatedDataset.mappedProperty;
+  }
+  if (openDataset.displayStatus !== updatedDataset.displayStatus) {
+    changed = true;
+    // openDataset.displayStatus = updatedDataset.displayStatus; Done later in updateDatasetDisplay
+  }
+  if (openDataset.choroplethString !== updatedDataset.choroplethString) {
+    changed = true;
+    openDataset.choroplethString = updatedDataset.choroplethString;
+    openDataset.choropleth = updatedDataset.choropleth;
+  }
+  if (openDataset.geoJSON.text !== updatedDataset.geoJSON.text) {
+    changed = true;
+    openDataset.geoJSON.text = updatedDataset.geoJSON.text;
+  }
+
+  if (changed) {
+    for (var i = 0; i < config.jsonData.length; i++) {
+      if (config.jsonData[i].name === openDataset.name) {
+        selectDisplayButton(i,displayStatus);
+        updateDatasetDisplay(i,displayStatus);
+        return;
+      }
+    }
+  }
+
+  openDataset = null;
+};
+var addModelDetails = function() {
+  var displayStatus = $('#dataset-display label.active input').val();
+
+  $('.btn-group').off( "click", ".disabled", btnGroupHandlerPrevent);
+  $('.btn-group').off("click", btnGroupHandlerUpdate);
+
+  config.jsonData.push(buildDataset());
+
+  addModelDataRow(config.jsonData[config.jsonData.length - 1]);
+  updateDatasetDisplay(config.jsonData.length - 1, displayStatus);
+
+  openDataset = null;
+
+  $('.btn-group').on("click", ".disabled", btnGroupHandlerPrevent);
+  $('.btn-group').on("click", btnGroupHandlerUpdate);
+};
+var buildDataset = function() {
+  var newDataset = {
+    name: $("#new_policy_name").val(),
+    data: null,
+    file: $("#policy-file-selector")[0].files[0],
+    geoAreaId: $("#geo_id_property").val(),
+    mappedProperty: $("#mapped_property_name").val(),
+    displayStatus: $('#dataset-display label.active input').val(),
+    choroplethString: pendingChoroplethString,
+    choropleth: pendingChoropleth,
+    geoJSON: {
+      file: $("#geojson-file-selector")[0].files[0],
+      text: $("#geo_display_property").val(),
+    }
+  };
+
+  pendingChoropleth = null;
+  pendingChoroplethString = '';
+
+  return newDataset;
+
+}
+var selectDisplayButton = function(index,displayStatus) {
+  $('#' + index + '_display_' + 'primary' + '_label').removeClass("active");
+  $('#' + index + '_display_' + 'primary').checked = false;
+  $('#' + index + '_display_' + 'secondary' + '_label').removeClass("active");
+  $('#' + index + '_display_' + 'secondary').checked = false;
+  $('#' + index + '_display_' + 'off' + '_label').removeClass("active");
+  $('#' + index + '_display_' + 'off').checked = false;
+
+  $('#' + index + '_display_' + displayStatus + '_label').addClass("active");
+  $('#' + index + '_display_' + displayStatus).checked = true;
+};
+
+// Select a new active policy from the main settings window
+var updateDatasetDisplay = function(clickedIndex, displayStatus) {
+  var update = false;
+  config.jsonData.forEach(function(dataset, index) {
+    if (displayStatus === 'primary') {
+      if (parseInt(clickedIndex) === index) {
+        if (dataset.displayStatus !== 'primary') {
+          update = true;
+        }
+        dataset.displayStatus = 'primary';
+        config.activePolicy = dataset;
+        config.activePolicyName = dataset.name;
+
+        $('#' + index + '_display_secondary_label').addClass("disabled");
+        $('#' + index + '_display_off_label').addClass("disabled");
+      } else {
+        if (dataset.displayStatus === 'primary') {
+          dataset.displayStatus = 'off';
+
+          $('#' + index + '_display_secondary_label').removeClass("disabled");
+          $('#' + index + '_display_off_label').removeClass("disabled");
+          selectDisplayButton(index, 'off');
+        }
+      }
     }
   });
+
+  if (update) {
+    loadModelData(); //TODO only update if you change primaries
+  }
+};
+
+var loadModelData = function() {
+  if (config.jsonData.length === 0) {
+    return;
+  }
+
+  if (config.activePolicy === null) {
+    for (var i = 0; i < config.jsonData.length; i++) {
+      if (config.jsonData[i].name === config.activePolicyName) {
+        config.activePolicy = config.jsonData[i];
+        break;
+      }
+    }
+    if (config.activePolicy === null) {
+      return;
+    }
+  }
+
+  config.geoAreaId = config.activePolicy.geoAreaId;
+  config.mappedProperty = config.activePolicy.mappedProperty;
+  config.geoTextProperty = config.activePolicy.geoJSON.text;
+  config.choropleth = findChoropleth(config.activePolicy.choroplethString);
+
+  var url = config.activePolicy.file.url;
+  if (!url || url === '') {
+    url = URL.createObjectURL(config.activePolicy.file);
+  }
+  loadCSVData(config.activePolicy, url);
 };
 var loadCSVData = function(dataset, url) {
+  if (dataset.data !== null && dataset.data !== undefined) {
+    updateMapDataset(dataset);
+    return;
+  }
+
   $.ajax({
     type: "GET",
     url: url,
@@ -223,10 +525,8 @@ var loadCSVData = function(dataset, url) {
     success: function(data) {
       var parsed = processData(data, dataset.geoAreaId);
       dataset.data = parsed.data;
-      config.timeSeries = parsed.timeSeries;
-      config.currentIndex = config.timeSeries[0];
-      updateMapData();
-      loadDetails();
+      dataset.timeSeries = parsed.timeSeries
+      updateMapDataset(dataset);
     },
     error: function(data) {
       console.error( "error loading model data: " + err );
@@ -263,29 +563,21 @@ var processData = function(allText, geoAreaId) {
   });
   return {timeSeries: timeSeries, data: values};
 };
-var loadJSONData = function(url) {
-  $.getJSON(url, function(json) {
-    dataset.data = json;
-  })
-  .done(function() {
-    updateMapData();
-    loadDetails();
-  })
-  .fail(function(err) {
-    console.error( "error loading model data: " + err );
-    loadDetails();
-  })
+var updateMapDataset = function(dataset) {
+  config.timeSeries = dataset.timeSeries;
+  config.currentIndex = config.timeSeries[0];
+  updateMapData();
+  loadDetails();
 }
 
 /** Choropleth Settings **/
-var displayCurrentChoropleth = function(currentChoropleth) {
-  $("#current-color-settings").html(buildChoroplethDisplay(currentChoropleth));
-};
 var buildChoroplethSelection = function() {
   pendingNewColor = '';
-  var currentChoropleth = findChoropleth(config.choroplethString);
 
-  $("#current-color-selection").html(buildChoroplethDisplay(config.choropleth));
+  if (openDataset !== null) {
+    var currentChoropleth = findChoropleth(openDataset.choroplethString);
+    $("#current-color-selection").html(buildChoroplethDisplay(currentChoropleth));
+  }
   $("#color-select-add tr").remove();
 
   var numColors = parseInt($("#color-number-dropdown")[0].value);
@@ -322,14 +614,12 @@ var selectNewChoropleth = function(row) {
 };
 var saveChoroplethSelection = function() {
   if (pendingNewColor != '') {
-    var numColors = $('#color-number-dropdown')[0].value;
-    config.choropleth = choroplethColors[pendingNewColor][numColors];
-    config.choroplethString = pendingNewColor + "[" + numColors + "]";
+    var numColors = $('#color-number-dropdown').val();
+    pendingChoropleth = choroplethColors[pendingNewColor][numColors];
+    pendingChoroplethString = pendingNewColor + '[' + numColors + ']';
     pendingNewColor = '';
 
-    $("#current-color-selection").html(buildChoroplethDisplay(config.choropleth));
-    displayCurrentChoropleth(config.choropleth);
-    updateMapData();
+    $("#current-color-settings").html(buildChoroplethDisplay(pendingChoropleth));
   }
 };
 
@@ -346,7 +636,7 @@ var saveConfigAsFile = function() {
       text: config.geoJson.text
     },
     jsonData: config.jsonData,
-    selectedPolicy: config.selectedPolicy
+    activePolicyName: config.activePolicy.name
   };
   config.jsonData.forEach(function(dataset) {
     delete dataset.data;
@@ -386,4 +676,4 @@ function destroyClickedElement(event) {
   document.body.removeChild(event.target);
 }
 
-export { loadSettings, loadOptionalConfig };
+export { loadOptionalConfigAndSettings };

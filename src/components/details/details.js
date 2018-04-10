@@ -29,7 +29,7 @@ export function showFeatureDetails(feature) {
   $("[id=no-region-selected]").hide();
   $("[id=no-json-loaded]").hide();
 
-  $("[id=region-name]").html(feature.properties[config.geoJson.text]);
+  $("[id=region-name]").html(feature.properties[config.geoTextProperty]);
   $("[id=mapped-property-name]").html(config.mappedProperty);
 
   $("[id=region-selected]").show();
@@ -90,20 +90,16 @@ var secondary = {
 };
 
 var showPrimaryChart = function(feature) {
-  config.jsonData.forEach(function(policy) {
-    if (policy.name === config.selectedPolicy) {
-      policy.data.forEach(function(dataset) {
-        if (dataset[config.geoAreaId] == feature.properties[config.geoAreaId]) {
-          var dataVals = dataset[config.mappedProperty];
-          var data = {
-            labels: config.timeSeries,
-            series:[
-              dataVals
-            ]
-          };
-          new Chartist.Line('#primary-chart', data, options);
-        }
-      });
+  config.activePolicy.data.forEach(function(dataset) {
+    if (dataset[config.geoAreaId] == feature.properties[config.geoAreaId]) {
+      var dataVals = dataset[config.mappedProperty];
+      var data = {
+        labels: config.timeSeries,
+        series:[
+          dataVals
+        ]
+      };
+      new Chartist.Line('#primary-chart', data, options);
     }
   });
 };
@@ -113,23 +109,19 @@ var colorLabels = ['b','c','d','e','f','g','h','i','j','k','l','m','n','o'];
 var showSecondaryCharts = function(feature) {
   var series = []
   var datas = []
-  config.jsonData.forEach(function(policy) {
-    if (policy.name === config.selectedPolicy) {
-      policy.data.forEach(function(dataset) {
-        if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
-          for (var key in dataset) {
-            if (key != config.mappedProperty && Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length) {
-              // series.push(dataset[key])
-              var data = {
-                labels: config.timeSeries,
-                series:[dataset[key]],
-                title: key
-              };
-              datas.push(data);
-            }
-          }
+  config.activePolicy.data.forEach(function(dataset) {
+    if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
+      for (var key in dataset) {
+        if (key != config.mappedProperty && Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length) {
+          // series.push(dataset[key])
+          var data = {
+            labels: config.timeSeries,
+            series:[dataset[key]],
+            title: key
+          };
+          datas.push(data);
         }
-      });
+      }
     }
   });
 

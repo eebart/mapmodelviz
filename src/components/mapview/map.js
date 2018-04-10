@@ -11,16 +11,7 @@ function baseStyle(feature) {
   return {
     "color": "#000000",
     fillColor: "#ffffff",
-    "weight": 0,
-    "opacity": 0
-  }
-};
-
-function blankStyle(feature) {
-  return {
-    "color": "#000000",
-    fillColor: "#ffffff",
-    "weight": 0,
+    "weight": 2,
     "opacity": 0
   }
 };
@@ -37,19 +28,16 @@ function choroStyle(feature) {
   };
 };
 var getFillColor = function(feature) {
-  if (config.choropleth !== null && config.selectedPolicy !== '') {
+  if (config.choropleth !== null && config.activePolicy !== null) {
     var choroplethNum = -1;
     var id = feature.properties[config.geoAreaId];
-    config.jsonData.forEach(function(policy) {
-      if (policy.name === config.selectedPolicy) {
-        for (var key in policy.data) {
-          if (policy.data[key][config.geoAreaId] == id) {
-            choroplethNum = policy.data[key]['choroplethNum'];
-            break;
-          }
-        }
+    for (var key in config.activePolicy.data) {
+      if (config.activePolicy.data[key][config.geoAreaId] == id) {
+        choroplethNum = config.activePolicy.data[key]['choroplethNum'];
+        break;
       }
-    });
+    }
+
     // choroplethNum = choroplethNum ? choroplethNum : -1;
     if (choroplethNum == -1) {
       return {
@@ -87,20 +75,6 @@ export function updateMapData() {
   updateSlider();
 
   addGeoJSONLayer();
-};
-export function setNewActivePolicy(newPolicyName) {
-  config.selectedPolicy = newPolicyName;
-  config.jsonData.forEach(function(policy) {
-    if (policy.name === newPolicyName) {
-      config.geoAreaId = policy.geoAreaId;
-      config.mappedProperty = policy.mappedProperty;
-    }
-  });
-
-  // if (geoJSONLayer) {
-  //   console.log('reset');
-  //     geoJSONLayer.setStyle(baseStyle);
-  // }
 };
 
 function highlightFeature(e) {
@@ -141,7 +115,7 @@ function selectFeature(e) {
       selectedFeature = layer;
       details.showFeatureDetails(selectedFeature.feature);
     }
-    
+
   }
 };
 function onEachFeature(feature, layer) {
@@ -154,15 +128,14 @@ function onEachFeature(feature, layer) {
 
 export function addGeoJSONLayer() {
   if (geoJSONLayer) {
-    console.log('reset2');
-      geoJSONLayer.setStyle(baseStyle);
+    geoJSONLayer.setStyle(baseStyle);
   }
 
-  if (jQuery.isEmptyObject(config.geoJson.file)) {
+  if (config.activePolicy === null) {
     return;
   }
 
-  var featureName = config.geoJson.text;
+  var featureName = config.activePolicy.geoJSON.text;
   if (!featureName || featureName === '') {
     featureName = 'name';
   }
@@ -176,9 +149,9 @@ export function addGeoJSONLayer() {
       return text;
     }, {});
 
-  var url = config.geoJson.file.url;
+  var url = config.activePolicy.geoJSON.file.url;
   if (!url || url === '') {
-    url = URL.createObjectURL(config.geoJson.file);
+    url = URL.createObjectURL(config.activePolicy.geoJSON.file);
   }
   $.getJSON(url, function(json) {
       // console.log('successfully loaded GeoJSON');
@@ -194,37 +167,40 @@ export function addGeoJSONLayer() {
 };
 
 function buildChoroplethLegend() {
-  if (config.choropleth !== null && config.selectedPolicy !== '') {
-    if (legend !== null) {
-      legend.remove();
-    }
-    legend = L.control({
-      position: 'bottomleft'
-    });
-
-    legend.onAdd = function(map) {
-      var div = L.DomUtil.create('div', 'info legend');
-
-      for (var i = 0; i < config.choropleth.length; i++) {
-        var lower = config.choroplethRanges[i]
-        if (lower > 10) {
-          lower = util.numberWithCommas(Math.round(lower * 100) / 100);
-        }
-        var upper = config.choroplethRanges[i + 1]
-        if (upper > 10) {
-          upper = util.numberWithCommas(Math.round(upper * 100) / 100);
-        }
-        div.innerHTML +=
-          '<i style="background:' + config.choropleth[i] + '"></i> ' +
-          lower + ' to ' + upper + '<br>';
-      }
-
-      return div;
-    };
-
-    legend.addTo(config.map);
-    configureSlider();
+  if (legend !== null) {
+    legend.remove();
   }
+
+  if (config.activePolicy === null || config.activePolicy.choropleth === null) {
+    return;
+  }
+
+  legend = L.control({
+    position: 'bottomleft'
+  });
+
+  legend.onAdd = function(map) {
+    var div = L.DomUtil.create('div', 'info legend');
+
+    for (var i = 0; i < config.choropleth.length; i++) {
+      var lower = config.choroplethRanges[i]
+      if (lower > 10) {
+        lower = util.numberWithCommas(Math.round(lower * 100) / 100);
+      }
+      var upper = config.choroplethRanges[i + 1]
+      if (upper > 10) {
+        upper = util.numberWithCommas(Math.round(upper * 100) / 100);
+      }
+      div.innerHTML +=
+        '<i style="background:' + config.choropleth[i] + '"></i> ' +
+        lower + ' to ' + upper + '<br>';
+    }
+
+    return div;
+  };
+
+  legend.addTo(config.map);
+  configureSlider();
 };
 
 export function configureSlider() {
@@ -244,9 +220,8 @@ export function configureSlider() {
     $("[id=slider]").css('left', sliderLeft + 'px');
   }
 };
-
 export function updateSlider() {
-  if (config.selectedPolicy !== '' && config.choropleth !== null && config.timeSeries !== null && config.timeSeries.length > 1 ) {
+  if (config.activePolicy !== null && config.timeSeries !== null && config.timeSeries.length > 1 ) {
     $("[id=slider]").show();
   }
 

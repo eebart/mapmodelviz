@@ -87,4 +87,14 @@
   .viewport {
     overflow: auto;
   }
+
+  .selectable {
+    cursor: pointer;
+  }
+
+  .icon-pencil {
+    width: 20px;
+    height: 20px;
+    // background: url(./img/pencil.jpg);
+  }
 }
