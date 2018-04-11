@@ -27,6 +27,10 @@ export function findChoroplethMinMax() {
 
   var currIdx = config.timeSeries.indexOf(config.currentIndex);
   for (var key in config.activePolicy.data) {
+    if (config.activePolicy.data[key][config.mappedProperty] === undefined) {
+      console.log('Invalid mapped property specified');
+      return;
+    }
     var theNum = parseFloat(config.activePolicy.data[key][config.mappedProperty][currIdx]);
     if (isNaN(theNum)) {
       debugger;
@@ -56,6 +60,15 @@ export function setChoroplethBuckets() {
     config.choroplethRanges[i] = config.choroplethDetails.max;
     for (var key in config.activePolicy.data) {
       var choroplethNum = numColors - 1;
+      if (config.activePolicy.data[key][config.mappedProperty] === undefined) {
+        console.log('Invalid mapped property specified');
+        config.choroplethDetails = {
+          min: -Infinity,
+          max: Infinity
+        };
+        config.choroplethRanges = [];
+        return;
+      }
       var value = parseFloat(config.activePolicy.data[key][config.mappedProperty][currIdx]);
       if (value < config.choroplethDetails.max) {
         choroplethNum = Math.floor((value - config.choroplethDetails.min)/intervalSize);
@@ -69,4 +82,16 @@ export function setChoroplethBuckets() {
     };
     config.choroplethRanges = [];
   }
+};
+
+export function displayMessage(message) {
+  var div = '<div style="padding: 5px;">'
+  div +=      '<div id="inner-message" class="inner-message alert alert-warning alert-dismissible fade">';
+  div+=         message;
+  div+=         '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+  div +=      '</div>';
+  div +=    '</div>';
+
+  $('#main-message').html(div);
+  $('#main-message').show();
 };

@@ -1,4 +1,5 @@
 import choroplethColors from '../../util/colors.js';
+import { displayMessage } from '../../util/util.js';
 import { updateMapData, addGeoJSONLayer } from '../mapview/map.js';
 import { loadDetails } from '../details/details.js';
 
@@ -40,6 +41,21 @@ var findChoropleth = function(choroplethString) {
 }
 
 var btnGroupHandlerPrevent = function(event) {
+  if (event.target.id.includes('dataset')) {
+    event.preventDefault();
+    return false;
+  }
+
+  var desc = event.target.id.split('_');
+  config.jsonData.forEach(function(dataset, index) {
+    if (parseInt(desc[0]) === index) {
+      if (dataset.displayStatus === 'primary' && desc[2] !== 'primary') {
+        //Trying to change off of primary. Show alert.
+        displayMessage('You must have at least one primary policy. To change the primary policy, select another policy from the list.');
+      }
+    }
+  });
+
   event.preventDefault();
   return false;
 };
@@ -68,13 +84,43 @@ var loadSettings = function() {
   });
 
   /***********************
-   * Data related to model data sets
+   * Main Page Model Datasets
    ***********************/
   displayModelData();
 
   $('.btn-group').on("click", ".disabled", btnGroupHandlerPrevent);
   $('.btn-group').on("click", btnGroupHandlerUpdate);
 
+  // $('#model-modal').on('hidden.bs.modal', function() {
+      // $('#dataset-form').formValidation('resetForm', true);
+  // });
+
+  $("#dataset-form").on("submit", function(event) {
+    var theform = $("#dataset-form")[0];
+    if (theform.checkValidity() === false || pendingChoropleth === null) {
+      event.preventDefault();
+      event.stopPropagation();
+      theform.classList.add('was-validated');
+      if (pendingChoropleth === null) {
+        $('#current-color-settings').addClass('is-invalid')
+      }
+      return false;
+    }
+    var formtype = $("#dataset-form").attr('formtype');
+    if (formtype === 'new') {
+      addModelDetails();
+    } else if (formtype === 'edit') {
+      saveModelDetails();
+    } else {
+      saveModelDetails_OK();
+    }
+    $('#model-modal').modal('hide')
+    return false;
+  });
+
+  /***********************
+   * Configuring model datasets
+   ***********************/
   if (config.allowFileUpload) {
     $("[id=dataset-add-btn]").on('click', function(){
         newDataset();
@@ -86,11 +132,14 @@ var loadSettings = function() {
         editDataset(this);
       }
     });
-    $("[id=policy-data-save]").click(function() {
-      saveModelDetails();
+
+    $("[id=policy-data-save]").on('click', function() {
+      // saveModelDetails();
+      return $("#dataset-form").submit();
     });
-    $("[id=policy-data-add]").click(function() {
-      addModelDetails();
+    $("[id=policy-data-add]").on('click', function() {
+      // addModelDetails();
+      $("#dataset-form").submit();
     });
 
     $("[id=dataset-add-btn]").show();
@@ -102,7 +151,8 @@ var loadSettings = function() {
       }
     });
     $("[id=policy-data-ok]").click(function() {
-      saveModelDetails_OK();
+      // saveModelDetails_OK();
+      $("#dataset-form").submit();
     });
 
     $("[id=dataset-add-btn]").hide();
@@ -133,8 +183,9 @@ var loadSettings = function() {
    * Choropleth Configuration
    ***********************/
   if (config.allowFileUpload) {
-    $("#change-color-btn").click(function() {
+    $("#choropleth-input").on('click', function() {
       buildChoroplethSelection();
+      $('#color-modal').modal('show');
     });
     $('#color-select-add').on('click', 'tr', function(){
       selectNewChoropleth(this);
@@ -177,6 +228,10 @@ var displayModelData = function() {
   }
 }
 var addModelDataRow = function(newDataset) {
+  if (config.jsonData.length === 1) {
+    $("[id=no-policies]").hide();
+    $("[id=policies-list]").show();
+  }
   $("#policies-body").append(buildRow(newDataset, config.jsonData.length-1));
 };
 var buildRow = function(dataset, index) {
@@ -187,7 +242,7 @@ var buildRow = function(dataset, index) {
   return divContent;
 };
 var displayButtons = function(dataset, index) {
-  var div = '<div class="btn-group btn-group-toggle" data-toggle="buttons">';
+  var div = '<div class="btn-group btn-group-toggle" data-toggle="buttons" style="width:100%;">';
 
   if (dataset.displayStatus === 'primary') {
     div += buildButton(index,'Primary','active','');
@@ -207,8 +262,12 @@ var displayButtons = function(dataset, index) {
   return div;
 }
 var buildButton = function(id, displayType, activeClass, disabledClass) {
+  var checked = '';
+  if (activeClass) {
+    checked = 'checked';
+  }
   var div = '<label id="' + id + '_display_' + displayType.toLowerCase() + '_label" class="btn btn-secondary btn-sm ' + activeClass + ' ' + disabledClass + '">';
-  div +=      '<input type="radio" name="options" id="' + id + '_display_' + displayType.toLowerCase() + '" autocomplete="off" checked> ' + displayType;
+  div +=      '<input type="radio" name="options" id="' + id + '_display_' + displayType.toLowerCase() + '" autocomplete="off" ' + checked + '> ' + displayType;
   div +=    '</label>';
   return div;
 }
@@ -230,13 +289,15 @@ var newDataset = function() {
   $("#dataset_secondary").checked = false;
   $("#dataset_secondary_label").removeClass('active');
   $("#dataset_secondary_label").removeClass('disabled');
-  $("#dataset_off").checked = false;
-  $("#dataset_off_label").removeClass('active');
+  $("#dataset_off").checked = true;
+  $("#dataset_off_label").addClass('active');
   $("#dataset_off_label").removeClass('disabled');
 
   $("#policy-data-add").show();
   $("#policy-data-save").hide();
   $("#policy-data-ok").hide();
+
+  $("#dataset-form").attr("formType", "new");
 
   $('#model-modal').modal('show');
 }
@@ -256,6 +317,8 @@ var editDataset = function(row) {
   $("#policy-data-ok").hide();
 
   loadModelDetails(dataToEdit);
+
+  $("#dataset-form").attr("formType", "edit");
 
   $('#model-modal').modal('show');
 }
@@ -283,6 +346,8 @@ var viewDataset = function(row) {
   $("#policy-data-ok").show();
 
   loadModelDetails(dataToEdit);
+
+  $("#dataset-form").attr("formType", "view");
 
   $('#model-modal').modal('show');
 }
@@ -543,6 +608,11 @@ var processData = function(allText, geoAreaId) {
   var timeSeries = headers.slice(timeIdx);
 
   var geoAreaIdx = headers.indexOf(geoAreaId);
+  if (geoAreaIdx === -1) {
+    console.log('Unable to find common geo area id. Could not process data.');
+    displayMessage('Unable to find the common geo area id in model data, so could not properly process it. Visuals will not be displayed for current primary.');
+    return {timeSeries: timeSeries, data: null};
+  }
 
   for (var i=1; i<allTextLines.length; i++) {
     var data = allTextLines[i].split(',');
@@ -620,6 +690,7 @@ var saveChoroplethSelection = function() {
     pendingNewColor = '';
 
     $("#current-color-settings").html(buildChoroplethDisplay(pendingChoropleth));
+    $('#current-color-settings').removeClass('is-invalid')
   }
 };
 

@@ -28,7 +28,7 @@ function choroStyle(feature) {
   };
 };
 var getFillColor = function(feature) {
-  if (config.choropleth !== null && config.activePolicy !== null) {
+  if (config.choropleth !== null && config.activePolicy !== null && config.activePolicy.data !== null) {
     var choroplethNum = -1;
     var id = feature.properties[config.geoAreaId];
     for (var key in config.activePolicy.data) {
@@ -55,8 +55,12 @@ var getFillColor = function(feature) {
       };
     }
   } else {
-    console.log('bucket not found');
-    return "#ffffff"
+    return {
+      fillColor: "#ffffff",
+      weight:1,
+      opacity:1,
+      fillOpacity: 0
+    }
   }
 };
 
@@ -69,10 +73,25 @@ export function loadMap() {
 };
 
 export function updateMapData() {
-  util.findChoroplethMinMax();
-  util.setChoroplethBuckets();
-  buildChoroplethLegend();
-  updateSlider();
+  var invalid = false;
+  if (config.activePolicy.data === null) {
+    invalid = true;
+  } else {
+    for (var key in config.activePolicy.data) {
+      if (config.activePolicy.data[key][config.mappedProperty] === undefined) {
+        util.displayMessage('Invalid mapped property specified, or not specified for all data elements. Data will not display properly.');
+        invalid = true;
+      }
+      break;
+    }
+  }
+
+  if (!invalid) {
+    util.findChoroplethMinMax();
+    util.setChoroplethBuckets();
+    buildChoroplethLegend();
+    updateSlider();
+  }
 
   addGeoJSONLayer();
 };
@@ -136,34 +155,44 @@ export function addGeoJSONLayer() {
   }
 
   var featureName = config.activePolicy.geoJSON.text;
-  if (!featureName || featureName === '') {
-    featureName = 'name';
+  if (!featureName) {
+    featureName = '';
   }
 
   geoJSONLayer = L.geoJSON(false, {
-      style: choroStyle,
-      onEachFeature: onEachFeature
-    })
-    .bindTooltip(function(layer) {
-      var text = String(layer.feature.properties[featureName]);
-      return text;
-    }, {});
+    style: choroStyle,
+    onEachFeature: onEachFeature
+  }).bindTooltip(function(layer) {
+    var text = layer.feature.properties[featureName];
+    if (text === undefined) {
+      text = '';
+    }
+    return String(text);
+  }, {});
 
   var url = config.activePolicy.geoJSON.file.url;
   if (!url || url === '') {
     url = URL.createObjectURL(config.activePolicy.geoJSON.file);
   }
   $.getJSON(url, function(json) {
-      // console.log('successfully loaded GeoJSON');
-    })
-    .done(function(json) {
-      details.showJsonLoaded();
-      geoJSONLayer.addData(json);
-      config.map.addLayer(geoJSONLayer);
-      config.map.fitBounds(geoJSONLayer.getBounds());
-    }).fail(function(err) {
-      console.error("Error rendering geojson map layer: " + err);
-    });
+    // console.log('successfully loaded GeoJSON');
+  })
+  .done(function(json) {
+    details.showJsonLoaded();
+    geoJSONLayer.addData(json);
+    try {
+      var featureText = json['features'][0]['properties'][featureName]
+      if (!featureText) {
+        geoJSONLayer.unbindTooltip();
+      }
+    } catch(err){
+      geoJSONLayer.unbindTooltip();
+    }
+    config.map.addLayer(geoJSONLayer);
+    config.map.fitBounds(geoJSONLayer.getBounds());
+  }).fail(function(err) {
+    console.error("Error rendering geojson map layer: " + err);
+  });
 };
 
 function buildChoroplethLegend() {

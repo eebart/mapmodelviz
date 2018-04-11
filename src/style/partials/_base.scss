@@ -1,4 +1,3 @@
-
 .centered-content {
   display: flex;
   align-items: center;
@@ -10,6 +9,21 @@
   min-height:600px;
   margin-left:10px;
   margin-right:10px;
+}
+
+.alert{
+
+}
+.message {
+  display: none;
+  z-index:5000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.inner-message {
+  margin: 0 auto;
 }
 
 .section {
