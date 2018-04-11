@@ -3,7 +3,6 @@ require('chartist-plugin-tooltip');
 
 import { numberWithCommas } from '../../util/util.js';
 
-
 var detailshtml = require('./details.html');
 
 export function loadDetails() {
@@ -61,7 +60,7 @@ export function showFeatureDetails(feature) {
 
 var plugins = [
   Chartist.plugins.tooltip({
-      valueTransform: function (value) {
+      valueTransform: function(value) {
           return numberWithCommas(value);
       }
   })
@@ -74,10 +73,12 @@ var options = {
       return index % modVal === 0 ? value : null;
     }
   },
-  // Y-Axis specific configuration
   axisY: {
     labelInterpolationFnc: function(value) {
-      if (value > 1000000) {
+      if (value > 1000000000) {
+        var rounded = (Math.round(value/1000000000 * 100) / 100)
+        return numberWithCommas(rounded) + 'b';
+      } else if (value > 1000000) {
         var rounded = (Math.round(value/1000000 * 100) / 100)
         return numberWithCommas(rounded) + 'm';
       }
@@ -87,30 +88,35 @@ var options = {
   plugins: plugins
 };
 
-var secondary = {
-  showPoint: true,
-  offset: 0,
+var secondaryOptions = {
+  // showPoint: false,
   axisX: {
-    showGrid: false,
-    // showLabel: false,
     labelInterpolationFnc: function(value,  index) {
-      if (index === 0 || index === (config.timeSeries.length - 1) || index === Math.round(config.timeSeries.length/2)) {
+      if (index === 0 || index === config.timeSeries.length - 1 || index === Math.floor((config.timeSeries.length - 1) / 2)) {
         return value;
       } else {
-        return false;
+        return null;
       }
     }
   },
-  // Y-Axis specific configuration
   axisY: {
-    offset: 0,
-    showLabel: false
+    offset:0,
+    showLabel: false,
+    showGrid: false
   },
   plugins: plugins
 };
 
 var showPrimaryChart = function(feature) {
-  for (var i = 0; i < config.activePolicy.data; i++) {
+  //First, find secondary datasets for display
+  var secondary = [];
+  config.jsonData.forEach(function(dataset) {
+    if (dataset.displayStatus === 'secondary') {
+      secondary.push(dataset);
+    }
+  });
+
+  for (var i = 0; i < config.activePolicy.data.length; i++) {
     var dataset = config.activePolicy.data[i];
     if (dataset[config.geoAreaId] === undefined || feature.properties[config.geoAreaId] === undefined) {
       //Can't match data to the selected region. Don't display charts.
@@ -118,16 +124,19 @@ var showPrimaryChart = function(feature) {
       return;
     }
     if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
-      var dataVals = dataset[config.mappedProperty];
-      if (dataVals !== undefined) {
+      var dataVals = [dataset[config.mappedProperty]];
+      secondary.forEach(function(secondset) {
+        if (secondset.data && secondset.data[i] && secondset.data[i][config.mappedProperty]) {
+          dataVals.push(secondset.data[i][config.mappedProperty]);
+        }
+      });
+      if (dataVals[0] !== undefined ) {
         $("[id=mapped-property-name]").html(config.mappedProperty);
         var data = {
           labels: config.timeSeries,
-          series:[
-            dataVals
-          ]
+          series:dataVals
         };
-        new Chartist.Line('#primary-chart', data, options);
+        var chart = new Chartist.Line('#primary-chart', data, options);
       }
       break;
     }
@@ -137,9 +146,18 @@ var showPrimaryChart = function(feature) {
 var colorLabels = ['b','c','d','e','f','g','h','i','j','k','l','m','n','o'];
 
 var showSecondaryCharts = function(feature) {
+  //First, find secondary datasets for display
+  var secondary = [];
+  config.jsonData.forEach(function(dataset) {
+    if (dataset.displayStatus === 'secondary') {
+      secondary.push(dataset);
+    }
+  });
+
   var series = []
   var datas = []
-  config.activePolicy.data.forEach(function(dataset) {
+  for (var i = 0; i < config.activePolicy.data.length; i++) {
+    var dataset = config.activePolicy.data[i];
     if (dataset[config.geoAreaId] === undefined || feature.properties[config.geoAreaId] === undefined) {
       //Can't match data to the selected region. Don't display charts.
     } else {
@@ -147,17 +165,25 @@ var showSecondaryCharts = function(feature) {
         for (var key in dataset) {
           if (key != config.mappedProperty && Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length) {
             // series.push(dataset[key])
+            var dataVals = [dataset[key]];
+            secondary.forEach(function(secondset) {
+              if (secondset.data && secondset.data[i] && secondset.data[i][key]) {
+                dataVals.push(secondset.data[i][key]);
+              }
+            });
+
             var data = {
               labels: config.timeSeries,
-              series:[dataset[key]],
+              series:dataVals,
               title: key
             };
             datas.push(data);
           }
         }
+        break;
       }
     }
-  });
+  }
 
   var charts = $('#secondary-charts')
   charts.html('');
@@ -179,7 +205,7 @@ var showSecondaryCharts = function(feature) {
   $(".chart-title-secondary").height(maxHeight);
 
   for (i = 0; i < datas.length; i++) {
-    new Chartist.Line('#chart-'+i, datas[i], secondary);
+    new Chartist.Line('#chart-'+i, datas[i], secondaryOptions);
   }
 
 };

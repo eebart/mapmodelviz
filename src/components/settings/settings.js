@@ -541,6 +541,19 @@ var updateDatasetDisplay = function(clickedIndex, displayStatus) {
           selectDisplayButton(index, 'off');
         }
       }
+    } else {
+      if (parseInt(clickedIndex) === index) {
+        dataset.displayStatus = displayStatus;
+        if (displayStatus === 'secondary') {
+          var url = dataset.file.url;
+          if (!url || url === '') {
+            url = URL.createObjectURL(dataset.file);
+          }
+          loadCSVData(dataset, url, false);
+        } else {
+          dataset.data = null;
+        }
+      }
     }
   });
 
@@ -556,9 +569,18 @@ var loadModelData = function() {
 
   if (config.activePolicy === null) {
     for (var i = 0; i < config.jsonData.length; i++) {
-      if (config.jsonData[i].name === config.activePolicyName) {
-        config.activePolicy = config.jsonData[i];
+      var dataset = config.jsonData[i];
+      if (dataset.name === config.activePolicyName) {
+        config.activePolicy = dataset;
         break;
+      } else {
+        if (dataset.displayStatus === 'secondary') {
+          var url = dataset.file.url;
+          if (!url || url === '') {
+            url = URL.createObjectURL(dataset.file);
+          }
+          loadCSVData(dataset, url, false);
+        }
       }
     }
     if (config.activePolicy === null) {
@@ -575,9 +597,9 @@ var loadModelData = function() {
   if (!url || url === '') {
     url = URL.createObjectURL(config.activePolicy.file);
   }
-  loadCSVData(config.activePolicy, url);
+  loadCSVData(config.activePolicy, url, true);
 };
-var loadCSVData = function(dataset, url) {
+var loadCSVData = function(dataset, url, update) {
   if (dataset.data !== null && dataset.data !== undefined) {
     updateMapDataset(dataset);
     return;
@@ -591,7 +613,9 @@ var loadCSVData = function(dataset, url) {
       var parsed = processData(data, dataset.geoAreaId);
       dataset.data = parsed.data;
       dataset.timeSeries = parsed.timeSeries
-      updateMapDataset(dataset);
+      if (update) {
+        updateMapDataset(dataset);
+      }
     },
     error: function(data) {
       console.error( "error loading model data: " + err );

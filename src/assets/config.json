@@ -20,15 +20,14 @@
       },
       "text": "ADMIN"
     }
-  },
-  {
-    "name": "Population",
+  },{
+    "name": "Energy Demand Multiplied",
     "file": {
-      "name": "worlddata.csv",
-      "url": "assets/worlddata.csv"
+      "name": "multiplied.csv",
+      "url": "assets/multiplied.csv"
     },
     "geoAreaId": "ISO_A3",
-    "mappedProperty": "total pop",
+    "mappedProperty": "total dom energy demand",
     "choroplethString": "GnBu[5]",
     "displayStatus": "off",
     "geoJSON": {
@@ -38,15 +37,14 @@
       },
       "text": "ADMIN"
     }
-  },
-  {
-    "name": "Energy Price Elasticity",
+  },{
+    "name": "Energy Demand Doubled",
     "file": {
-      "name": "worlddata.csv",
-      "url": "assets/worlddata.csv"
+      "name": "doubled.csv",
+      "url": "assets/doubled.csv"
     },
     "geoAreaId": "ISO_A3",
-    "mappedProperty": "GDP with energy price elasticity effects",
+    "mappedProperty": "total dom energy demand",
     "choroplethString": "GnBu[5]",
     "displayStatus": "off",
     "geoJSON": {
