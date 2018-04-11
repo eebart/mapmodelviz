@@ -1,5 +1,7 @@
-var Chartist = require('chartist');
-require('chartist-plugin-tooltip');
+// var Chartist = require('chartist');
+// require('chartist-plugin-tooltip');
+
+var Chart = require('chart.js');
 
 import { numberWithCommas } from '../../util/util.js';
 
@@ -57,55 +59,102 @@ export function showFeatureDetails(feature) {
   showSecondaryCharts(feature);
 };
 
+var getFormattedNumber = function(value) {
+  if (value >= 1000000000000) {
+    var rounded = (Math.round(value/1000000000000 * 100) / 100)
+    return numberWithCommas(rounded) + 't';
+  } else if (value >= 1000000000) {
+    var rounded = (Math.round(value/1000000000 * 100) / 100)
+    return numberWithCommas(rounded) + 'b';
+  } else if (value >= 1000000) {
+    var rounded = (Math.round(value/1000000 * 100) / 100)
+    return numberWithCommas(rounded) + 'm';
+  } else if (value >= 10) {
+    var rounded = (Math.round(value * 100) / 100)
+    return numberWithCommas(rounded);
+  } else if (value >= 1) {
+    var rounded = (Math.round(value * 1000) / 1000)
+    return numberWithCommas(rounded);
+  } else {
+    var rounded = (Math.round(value) * 10000 / 10000)
+    return numberWithCommas(rounded);
+  }
+}
 
-var plugins = [
-  Chartist.plugins.tooltip({
-      valueTransform: function(value) {
-          return numberWithCommas(value);
+var getOptions = function(title) {
+  var options = {
+    responsive: true,
+    title: {
+      display: true,
+      text: title
+    },
+    legend: {
+			labels: {
+				usePointStyle: true
       }
-  })
-]
-var options = {
-  // showPoint: false,
-  axisX: {
-    labelInterpolationFnc: function(value,  index) {
-      var modVal = Math.floor(config.timeSeries.length / 10);
-      return index % modVal === 0 ? value : null;
-    }
-  },
-  axisY: {
-    labelInterpolationFnc: function(value) {
-      if (value > 1000000000) {
-        var rounded = (Math.round(value/1000000000 * 100) / 100)
-        return numberWithCommas(rounded) + 'b';
-      } else if (value > 1000000) {
-        var rounded = (Math.round(value/1000000 * 100) / 100)
-        return numberWithCommas(rounded) + 'm';
-      }
-      return numberWithCommas(value);
-    }
-  },
-  plugins: plugins
-};
+    },
+    tooltips: {
+      mode: 'index',
+      intersect: false,
+      callbacks: {
+          label: function(tooltipItem, data) {
+              var label = data.datasets[tooltipItem.datasetIndex].label || '';
 
-var secondaryOptions = {
-  // showPoint: false,
-  axisX: {
-    labelInterpolationFnc: function(value,  index) {
-      if (index === 0 || index === config.timeSeries.length - 1 || index === Math.floor((config.timeSeries.length - 1) / 2)) {
-        return value;
-      } else {
-        return null;
+              if (label) {
+                  label += ': ';
+              }
+              label += getFormattedNumber(tooltipItem.yLabel); //getFormattedNumber(tooltipItem.yLabel);
+              return label;
+          }
       }
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: true
+    },
+    scales: {
+      xAxes: [{
+        display: true,
+        scaleLabel: {
+          display: false
+        }
+      }],
+      yAxes: [{
+        display: true,
+        ticks: {
+          // Include a dollar sign in the ticks
+          callback: function(value, index, values) {
+            return getFormattedNumber(value);
+          }
+        },
+        scaleLabel: {
+          display: false,
+          labelString: ''
+        }
+      }]
     }
-  },
-  axisY: {
-    offset:0,
-    showLabel: false,
-    showGrid: false
-  },
-  plugins: plugins
+  };
+
+  return options;
 };
+var getDataset = function(label, color, data) {
+  return {
+    label: label,
+    backgroundColor: color,
+    borderColor: color,
+    pointRadius: 1,
+    data: data,
+    fill: false,
+  };
+}
+
+var colors = ['rgb(215,2,6)','rgb(240,91,79)','rgb(244,198,61)','rgb(209,121,5)',
+              'rgb(69,61,63)','rgb(89,146,43)','rgb(5,68,211)','rgb(107,3,146)',
+              'rgb(221,164,88)','rgb(234,207,125)','rgb(134,121,125)','rgb(178,195,38)',
+              'rgb(97,136,226)','rgb(167,72,202)'];
+
+var primaryLineChart = null;
+var secondaryCharts = [];
 
 var showPrimaryChart = function(feature) {
   //First, find secondary datasets for display
@@ -124,26 +173,35 @@ var showPrimaryChart = function(feature) {
       return;
     }
     if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
-      var dataVals = [dataset[config.mappedProperty]];
-      secondary.forEach(function(secondset) {
+      var dataVals = [getDataset(config.activePolicy.name,colors[0],dataset[config.mappedProperty])];
+      secondary.forEach(function(secondset, index) {
         if (secondset.data && secondset.data[i] && secondset.data[i][config.mappedProperty]) {
-          dataVals.push(secondset.data[i][config.mappedProperty]);
+          var colorNum = (index+1) % colors.length;
+          var dataset = getDataset(secondset.name, colors[colorNum], secondset.data[i][config.mappedProperty]);
+          dataset.borderDash = [5,5];
+          dataVals.push(dataset);
         }
       });
       if (dataVals[0] !== undefined ) {
-        $("[id=mapped-property-name]").html(config.mappedProperty);
         var data = {
           labels: config.timeSeries,
-          series:dataVals
+          datasets: dataVals
         };
-        var chart = new Chartist.Line('#primary-chart', data, options);
+
+        var ctx = $("#primary-chart");
+        if (primaryLineChart) {
+          primaryLineChart.destroy();
+        }
+        primaryLineChart = new Chart(ctx, {
+          type: 'line',
+          data: data,
+          options: getOptions(config.mappedProperty)
+        });
       }
       break;
     }
   }
 };
-
-var colorLabels = ['b','c','d','e','f','g','h','i','j','k','l','m','n','o'];
 
 var showSecondaryCharts = function(feature) {
   //First, find secondary datasets for display
@@ -154,8 +212,9 @@ var showSecondaryCharts = function(feature) {
     }
   });
 
-  var series = []
-  var datas = []
+  var series = [];
+  var datas = [];
+  var options = [];
   for (var i = 0; i < config.activePolicy.data.length; i++) {
     var dataset = config.activePolicy.data[i];
     if (dataset[config.geoAreaId] === undefined || feature.properties[config.geoAreaId] === undefined) {
@@ -164,48 +223,59 @@ var showSecondaryCharts = function(feature) {
       if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
         for (var key in dataset) {
           if (key != config.mappedProperty && Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length) {
-            // series.push(dataset[key])
-            var dataVals = [dataset[key]];
-            secondary.forEach(function(secondset) {
+            var startingColorIdx = Math.floor((Math.random() * colors.length));
+            var dataVals = [getDataset(config.activePolicy.name,colors[startingColorIdx],dataset[key])];
+
+            secondary.forEach(function(secondset, index) {
               if (secondset.data && secondset.data[i] && secondset.data[i][key]) {
-                dataVals.push(secondset.data[i][key]);
+                var colorNum = (index+startingColorIdx+1) % colors.length;
+                var dataset = getDataset(secondset.name, colors[colorNum], secondset.data[i][key]);
+                dataset.borderDash = [5,10];
+                dataVals.push(dataset);
               }
             });
 
             var data = {
               labels: config.timeSeries,
-              series:dataVals,
-              title: key
+              datasets: dataVals
             };
             datas.push(data);
+            options.push(getOptions(key));
           }
         }
         break;
       }
     }
   }
+  secondaryCharts.forEach(function(chart) {
+    chart.destroy();
+  });
+  secondaryCharts = [];
 
-  var charts = $('#secondary-charts')
-  charts.html('');
-
+  var charts = $('#secondary-charts');
   var i;
   for (i = 0; i < datas.length; i++) {
-    var colorNum = i % colorLabels.length;
-    var div = '<div class="col-lg-6 col-sm-12 secondary-chart"><div>';
-    div += '<div class="chart-title-secondary"><div class="chart-title-content">' + datas[i].title + '</div></div>'
-    div += '<div id="chart-' + i + '" class="secondary-chart ct-chart ct-major-third ct-series-' + colorLabels[colorNum] + '"></div>';
-    div += '</div></div>';
+    var div = '<div class="col-lg-6 col-sm-12 secondary-chart">';
+    // div += '<div class="chart-title-secondary"><div class="chart-title-content">' + datas[i].title + '</div></div>'
+    div += '<canvas id="chart-' + i + '" class="secondary-chart" width="150" height="150"></canvas>';
+    div += '</div>';
     charts.append(div);
   }
 
-  var maxHeight = 0;
-  $(".chart-title-secondary").each(function(){
-     if ($(this).height() > maxHeight) { maxHeight = $(this).height(); }
-  });
-  $(".chart-title-secondary").height(maxHeight);
+  // var maxHeight = 0;
+  // $(".chart-title-secondary").each(function(){
+  //    if ($(this).height() > maxHeight) { maxHeight = $(this).height(); }
+  // });
+  // $(".chart-title-secondary").height(maxHeight);
 
-  for (i = 0; i < datas.length; i++) {
-    new Chartist.Line('#chart-'+i, datas[i], secondaryOptions);
+  for(i = 0; i < datas.length; i++) {
+    var ctx = $('#chart-'+i);
+    var newChart = new Chart(ctx, {
+      type: 'line',
+      data: datas[i],
+      options: options[i]
+    });
+    secondaryCharts.push(newChart);
   }
 
 };
