@@ -70,7 +70,6 @@
   }
 
   .model-detail {
-    height:70%;
     display: flex;
     flex-flow: column;
 
@@ -86,8 +85,28 @@
   }
 
   .settings-detail {
-    height:30%;
     padding-top:20px;
+  }
+
+  @include media-breakpoint-up(md) {
+    .model-detail {
+      height:70%;
+    }
+
+    .settings-detail {
+      height:30%;
+    }
+  }
+
+  @include media-breakpoint-down(md) {
+    .model-detail {
+      min-height:300px;
+      max-height:400px;
+    }
+
+    .settings-detail {
+      height:250px;
+    }
   }
 
   .info-content {

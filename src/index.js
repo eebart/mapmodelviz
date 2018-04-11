@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   var slider = document.getElementById("the-slider");
   slider.oninput = function() {
       config.currentIndex = this.value;
+      $('#current-time-val').html(config.currentIndex);
       updateMapData();
   };
 

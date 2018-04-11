@@ -7,15 +7,15 @@
       <div class="modal-body">
           <form id="dataset-form" class="form-horizontal needs-validation" novalidate>
             <div class="row form-group">
-                <label for="new_policy_name" class="col-sm-3 col-form-label">Name</label>
-                <div class="col-sm-9">
+                <label for="new_policy_name" class="col-3 col-form-label">Name</label>
+                <div class="col-9">
                     <input type="text" class="form-control" id="new_policy_name" name="new_policy_name" required>
                     <small  class="form-text text-muted">Must be unique. Special characters and whitespace are allowed.</small>
                 </div>
             </div>
             <div class="row form-group">
-                <label for="file_name" class="col-sm-3 col-form-label">Data File</label>
-                <div class="col-sm-9">
+                <label for="file_name" class="col-3 col-form-label">Data File</label>
+                <div class="col-9">
                     <div class="input-group">
                       <div class="custom-file">
                         <input type="file" class="custom-file-input" id="policy-file-selector" required>
@@ -25,8 +25,8 @@
                 </div>
             </div>
             <div class="row form-group">
-                <label for="geojson_name" class="col-sm-3 col-form-label">GeoJSON File</label>
-                <div class="col-sm-9">
+                <label for="geojson_name" class="col-3 col-form-label">GeoJSON File</label>
+                <div class="col-9">
                     <div class="input-group">
                       <div class="custom-file">
                         <input type="file" class="custom-file-input" id="geojson-file-selector" required>
@@ -36,31 +36,31 @@
                 </div>
             </div>
             <div class="row form-group">
-                <label for="mapped_property_name" class="col-sm-3 col-form-label">Mapped Property</label>
-                <div class="col-sm-9">
+                <label for="mapped_property_name" class="col-3 col-form-label">Mapped Property</label>
+                <div class="col-9">
                     <input type="text" class="form-control" id="mapped_property_name" name="mapped_property_name" required>
                     <small  class="form-text text-muted">Main property id that will be shown in the map view.</small>
                 </div>
             </div>
             <div class="row form-group">
-                <label for="geo_id_property" class="col-sm-3 col-form-label">Geo ID Property</label>
-                <div class="col-sm-9">
+                <label for="geo_id_property" class="col-3 col-form-label">Geo ID Property</label>
+                <div class="col-9">
                     <input type="text" class="form-control" id="geo_id_property" name="geo_id_property" required>
                     <small  class="form-text text-muted">Primary key id that links the GeoJSON to Model Data.</small>
                 </div>
             </div>
             <div class="row form-group">
-                <label for="geo_display_property" class="col-sm-3 col-form-label">Geo Display Property</label>
-                <div class="col-sm-9">
+                <label for="geo_display_property" class="col-3 col-form-label">Geo Display Property</label>
+                <div class="col-9">
                     <input type="text" class="form-control" id="geo_display_property" name="geo_display_property">
                     <small  class="form-text text-muted">Display name property from the GeoJSON file. Optional.</small>
                 </div>
             </div>
             <div class="row form-group"> <!-- Color Scheme -->
-                <div class="col-sm-3 name">
+                <div class="col-3 name">
                     Color Scheme
                 </div>
-                <div id="choropleth-input" class="input-group col-sm-9 ">
+                <div id="choropleth-input" class="input-group col-9 ">
                     <div class="custom-file">
                       <div id="current-color-settings" class="choropleth-display form-control choropleth-select-display"></div>
                       <label class=""></label>
@@ -68,8 +68,8 @@
                 </div>
             </div>
             <div class="row form-group">
-                <label for="new_policy_name" class="col-sm-3 col-form-label">Data Display</label>
-                <div id="dataset-display" class="btn-group btn-group-toggle col-sm-9" data-toggle="buttons">
+                <label for="new_policy_name" class="col-3 col-form-label">Data Display</label>
+                <div id="dataset-display" class="btn-group btn-group-toggle col-9" data-toggle="buttons">
                   <label class="btn btn-secondary" id="dataset_primary_label">
                     <input type="radio" name="options" id="dataset_primary" value="primary" autocomplete="off"> Primary
                   </label>

@@ -233,20 +233,32 @@ function buildChoroplethLegend() {
 };
 
 export function configureSlider() {
+  var slider = $("#slider");
   if (legend) {
     // var legendRight = parseInt($( ".legend" )[0].css('right').slice(0, -2));
-    var legendWidth = $( ".legend" ).width();
+    var thelegend = $( ".legend" );
+    var legendWidth = thelegend.width();
     var viewportWidth = $("[id=map-viewport]").width();
     var sliderLeft = legendWidth + 30;
     var sliderWidth = viewportWidth - sliderLeft - 15;
-    $("[id=slider]").css('width', sliderWidth + 'px');
-    $("[id=slider]").css('left', sliderLeft + 'px');
+    slider.css('width', sliderWidth + 'px');
+    slider.css('left', sliderLeft + 'px');
+
+    var currentTime = $("#current-time");
+    var legendHeight = thelegend.height();
+    currentTime.css('width', legendWidth + 10 + 2);
+    currentTime.css('left', thelegend.css('margin-left'));
+    currentTime.css('bottom', legendHeight + 5 + 10 + 2 + 10);
+
+    $('#current-time-val').html(config.currentIndex);
+
+    currentTime.show();
   } else {
     var viewportWidth = $("[id=map-viewport]").width();
     var sliderLeft = 15
     var sliderWidth = viewportWidth - sliderLeft * 2;
-    $("[id=slider]").css('width', sliderWidth + 'px');
-    $("[id=slider]").css('left', sliderLeft + 'px');
+    slider.css('width', sliderWidth + 'px');
+    slider.css('left', sliderLeft + 'px');
   }
 };
 export function updateSlider() {
@@ -261,5 +273,7 @@ export function updateSlider() {
     $("[id=the-slider]").attr('min', min);
     $("[id=the-slider]").attr('max', max);
     $("[id=the-slider]").attr('value', config.currentIndex)
+
+    $('#current-time-val').html(config.currentIndex);
   }
 };

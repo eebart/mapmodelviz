@@ -4,7 +4,6 @@ import { updateMapData, addGeoJSONLayer } from '../mapview/map.js';
 import { loadDetails } from '../details/details.js';
 
 var policieshtml = require('./policies.html');
-var settingshtml = require('./settings.html');
 var nameselector = require('./nameSelector.html');
 var modelselector = require('./modelSelector.html');
 var exportselector = require('./exportSelector.html');

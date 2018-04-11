@@ -4863,7 +4863,6 @@ a.text-dark:hover, a.text-dark:focus {
     padding-right: 5px;
     position: absolute; }
   .info-view .model-detail {
-    height: 70%;
     display: flex;
     flex-flow: column; }
     .info-view .model-detail .model-title {
@@ -4873,8 +4872,18 @@ a.text-dark:hover, a.text-dark:focus {
     .info-view .model-detail .viewport {
       flex: 2; }
   .info-view .settings-detail {
-    height: 30%;
     padding-top: 20px; }
+  @media (min-width: 768px) {
+    .info-view .model-detail {
+      height: 70%; }
+    .info-view .settings-detail {
+      height: 30%; } }
+  @media (max-width: 991.98px) {
+    .info-view .model-detail {
+      min-height: 300px;
+      max-height: 400px; }
+    .info-view .settings-detail {
+      height: 250px; } }
   .info-view .info-content {
     width: 100%;
     height: 100%;
@@ -4898,7 +4907,22 @@ a.text-dark:hover, a.text-dark:focus {
   position: absolute;
   left: 150px;
   bottom: 25px;
-  z-index: 10000; }
+  z-index: 1049; }
+
+.map-view .map-box, .map-view #current-time, .map-view .legend {
+  color: #555;
+  background-color: rgba(255, 255, 255, 0.6);
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  border: 1px solid black;
+  padding: 5px; }
+
+.map-view #current-time {
+  position: absolute;
+  left: 10px;
+  bottom: 120px;
+  z-index: 1049;
+  font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif; }
 
 .map-view .leaflet-tooltip.my-labels {
   background-color: transparent;
@@ -4906,13 +4930,7 @@ a.text-dark:hover, a.text-dark:focus {
   box-shadow: none; }
 
 .map-view .legend {
-  line-height: 18px;
-  color: #555;
-  background-color: rgba(255, 255, 255, 0.6);
-  -moz-border-radius: 2px;
-  border-radius: 2px;
-  border: 1px solid black;
-  padding: 5px; }
+  line-height: 18px; }
 
 .map-view .legend i {
   width: 18px;

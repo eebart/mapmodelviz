@@ -10,7 +10,25 @@
       position: absolute;
       left: 150px;
       bottom: 25px;
-      z-index: 10000;
+      z-index: 1049;
+    }
+
+    .map-box {
+      color: #555;
+      background-color: rgba(255,255,255,0.6) ;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+      border: 1px solid black;
+      padding:5px;
+    }
+
+    #current-time {
+      position: absolute;
+      left: 10px;
+      bottom: 120px;
+      z-index: 1049;
+      @extend .map-box;
+      font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
     }
 
     .leaflet-tooltip.my-labels {
@@ -21,13 +39,7 @@
 
   .legend {
       line-height: 18px;
-      color: #555;
-      background-color: rgba(255,255,255,0.6) ;
-      -moz-border-radius: 2px;
-      border-radius: 2px;
-      border: 1px solid black;
-      padding:5px;
-
+      @extend .map-box;
   }
   .legend i {
       width: 18px;

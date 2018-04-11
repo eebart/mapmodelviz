@@ -8,6 +8,9 @@
             <div id="map-viewport" class="viewport">
                 <div id="map" class="map">
                 </div>
+                <div id="current-time" style="display:none;">
+                    Current Time: <span id="current-time-val"></span>
+                </div>
                 <div id="slider" style="display:none;">
                     <div class="slide-container">
                         <input type="range" min="1" max="100" value="50" class="slider" id="the-slider">
@@ -24,13 +27,13 @@
                     </a>
                 </div>
                 <div class="viewport">
-                    <div class="info-title">Details</div>
+                    <div class="info-title"></div>
                     <div id="details-content" class="info-content"></div>
                 </div>
             </div>
             <div class="settings-detail">
                     <div class="viewport">
-                        <div class="info-title">Settings</div>
+                        <div class="info-title"></div>
                         <div id="settings-content" class="info-content settings-content"></div>
                     </div>
             </div>
