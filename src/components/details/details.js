@@ -251,8 +251,10 @@ var showSecondaryCharts = function(feature) {
     chart.destroy();
   });
   secondaryCharts = [];
-
+  
   var charts = $('#secondary-charts');
+  charts.html('');
+
   var i;
   for (i = 0; i < datas.length; i++) {
     var div = '<div class="col-lg-6 col-sm-12 secondary-chart">';
