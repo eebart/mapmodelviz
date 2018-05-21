@@ -74,7 +74,7 @@
     flex-flow: column;
 
     .model-title {
-      padding-bottom:20px;
+      // padding-bottom:20px;
       width:100%;
       overflow-x:auto;
     }
@@ -88,7 +88,7 @@
     padding-top:20px;
   }
 
-  @include media-breakpoint-up(md) {
+  @include media-breakpoint-up(sm) {
     .model-detail {
       height:70%;
     }
@@ -98,7 +98,7 @@
     }
   }
 
-  @include media-breakpoint-down(md) {
+  @include media-breakpoint-down(sm) {
     .model-detail {
       min-height:300px;
       max-height:400px;

@@ -228,8 +228,19 @@ function buildChoroplethLegend() {
     return div;
   };
 
+
   legend.addTo(config.map);
   configureSlider();
+  displayPropertyTitle();
+};
+
+function displayPropertyTitle() {
+  var viewportWidth = $("[id=map-viewport]").width();
+  var propTitle = $("#mapped-property-title");
+  propTitle.css('width', viewportWidth - 50 * 2);
+  propTitle.css('left', 50);
+  propTitle.html('Displayed: ' + config.activePolicy.name);
+  propTitle.show();
 };
 
 export function configureSlider() {

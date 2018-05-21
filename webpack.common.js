@@ -69,15 +69,20 @@ module.exports = {
       template: 'src/index.html'
     }),
     new webpack.ProvidePlugin({
-     $: "jquery",
-     jQuery: "jquery",
-     // Popper: ['popper.js', 'default'],
-     config: ['configsrc', 'default']
+      $: "jquery",
+      jQuery: "jquery",
+      Popper: ['popper.js', 'default'],
+      config: ['configsrc', 'default'],
+      Alert: "exports-loader?Alert!bootstrap/js/dist/alert",
+      Button: "exports-loader?Button!bootstrap/js/dist/button",
+      Collapse: "exports-loader?Collapse!bootstrap/js/dist/collapse",
+      Dropdown: "exports-loader?Dropdown!bootstrap/js/dist/dropdown",
+      Modal: "exports-loader?Modal!bootstrap/js/dist/modal",
+      Util: "exports-loader?Util!bootstrap/js/dist/util",
    }),
    extractPlugin,
    new CopyWebpackPlugin([
       { from: './src/assets/', to: 'assets/' },
-      // { from: './node_modules/leaflet/dist/images/', to: 'images/' }
       { from: './src/style/img/', to: 'img/' }
     ], {}),
   ],

@@ -22,6 +22,15 @@
       padding:5px;
     }
 
+    #mapped-property-title {
+      position: absolute;
+      top: 10px;
+      overflow-x: scroll;
+      z-index: 1049;
+      text-align: center;
+      font-weight:bold;
+    }
+
     #current-time {
       position: absolute;
       left: 10px;

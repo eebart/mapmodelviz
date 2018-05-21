@@ -84,6 +84,7 @@ var getFormattedNumber = function(value) {
 var getOptions = function(title) {
   var options = {
     responsive: true,
+    maintainAspectRatio: false,
     title: {
       display: true,
       text: title
@@ -122,7 +123,6 @@ var getOptions = function(title) {
       yAxes: [{
         display: true,
         ticks: {
-          // Include a dollar sign in the ticks
           callback: function(value, index, values) {
             return getFormattedNumber(value);
           }
@@ -251,7 +251,7 @@ var showSecondaryCharts = function(feature) {
     chart.destroy();
   });
   secondaryCharts = [];
-  
+
   var charts = $('#secondary-charts');
   charts.html('');
 
@@ -259,7 +259,7 @@ var showSecondaryCharts = function(feature) {
   for (i = 0; i < datas.length; i++) {
     var div = '<div class="col-lg-6 col-sm-12 secondary-chart">';
     // div += '<div class="chart-title-secondary"><div class="chart-title-content">' + datas[i].title + '</div></div>'
-    div += '<canvas id="chart-' + i + '" class="secondary-chart" width="150" height="150"></canvas>';
+    div += '<canvas id="chart-' + i + '" class="secondary-chart" width="150" height="200"></canvas>';
     div += '</div>';
     charts.append(div);
   }

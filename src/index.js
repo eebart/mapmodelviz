@@ -3,13 +3,11 @@ import { loadOptionalConfigAndSettings } from './components/settings/settings.js
 // import { loadMap, updateMapData } from './components/mapview/map.js';
 import { loadMap, updateMapData, configureSlider } from './components/mapview/map.js';
 
-window.$ = window.jQuery = require('jquery');
-
-window.Util = require('exports-loader?Util!bootstrap/js/dist/util'); // eslint-disable-line
-window.Modal = require('exports-loader?Modal!bootstrap/js/dist/modal'); // eslint-disable-line
-window.Button = require('exports-loader?Modal!bootstrap/js/dist/button'); // eslint-disable-line
-window.Alert = require('exports-loader?Modal!bootstrap/js/dist/alert'); // eslint-disable-line
-
+import "bootstrap/js/dist/util";
+import "bootstrap/js/dist/modal";
+import "bootstrap/js/dist/button";
+import "bootstrap/js/dist/alert";
+import "bootstrap/js/dist/collapse";
 
 import './style/index.scss';
 import '../node_modules/leaflet/dist/leaflet.css';
@@ -30,8 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
 });
-
-
 
 window.addEventListener('resize', function() {
   if (!throttled) {
