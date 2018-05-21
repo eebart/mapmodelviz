@@ -234,7 +234,7 @@ function buildChoroplethLegend() {
   displayPropertyTitle();
 };
 
-function displayPropertyTitle() {
+export function displayPropertyTitle() {
   var viewportWidth = $("[id=map-viewport]").width();
   var propTitle = $("#mapped-property-title");
   propTitle.css('width', viewportWidth - 50 * 2);

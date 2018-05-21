@@ -1,13 +1,14 @@
 import choroplethColors from './util/colors.js';
 import { loadOptionalConfigAndSettings } from './components/settings/settings.js';
 // import { loadMap, updateMapData } from './components/mapview/map.js';
-import { loadMap, updateMapData, configureSlider } from './components/mapview/map.js';
+import { loadMap, updateMapData, configureSlider, displayPropertyTitle } from './components/mapview/map.js';
 
 import "bootstrap/js/dist/util";
 import "bootstrap/js/dist/modal";
 import "bootstrap/js/dist/button";
 import "bootstrap/js/dist/alert";
 import "bootstrap/js/dist/collapse";
+import "bootstrap/js/dist/dropdown";
 
 import './style/index.scss';
 import '../node_modules/leaflet/dist/leaflet.css';
@@ -32,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('resize', function() {
   if (!throttled) {
     configureSlider();
+    displayPropertyTitle();
+
     throttled = true;
     setTimeout(function() {
       throttled = false;

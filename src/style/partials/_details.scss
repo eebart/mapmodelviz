@@ -18,6 +18,11 @@
     padding-bottom:25px;
   }
 
+  #secondary-charts {
+    margin-left:0px;
+    margin-right:0px;
+  }
+
   .chart-title {
     width:100%;
     text-align: center;
@@ -39,5 +44,7 @@
 
   .secondary-chart {
     padding-bottom:10px;
+    padding-left:0px;
+    padding-right:0px;
   }
 }

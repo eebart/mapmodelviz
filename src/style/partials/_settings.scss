@@ -1,8 +1,8 @@
 
 .settings-content {
-  padding-left: 15px !important;
-  padding-right: 15px !important;
-
+  // padding-left: 15px !important;
+  // padding-right: 15px !important;
+  padding-top:20px;
   .row {
     margin-top:5px;
     margin-bottom:5px;
@@ -14,6 +14,26 @@
   }
   .btn {
     width:100%;
+  }
+}
+
+.dropdown-menu {
+  border:2px solid black;
+  border-radius:10px;
+  margin-bottom:10px !important;
+  width: 100%;
+
+  max-height:400px;
+  overflow-y: scroll;
+
+  .row {
+    margin-left:0px;
+    margin-right:0px;
+  }
+
+  .col-sm{
+    padding-left:0px;
+    padding-right:0px;
   }
 }
 

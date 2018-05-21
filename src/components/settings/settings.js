@@ -14,6 +14,9 @@ var pendingChoroplethString = '';
 var openDataset = null;
 var pendingChoropleth = null;
 
+var openedDropdown = false;
+var closedByButton = false;
+
 var loadOptionalConfigAndSettings = function() {
   var configFileURL = 'assets/config.json';
   $.getJSON(configFileURL, function(json) {
@@ -73,6 +76,21 @@ var loadSettings = function() {
   $("#model-popup").html(modelselector);
   $("#export-popup").html(exportselector);
   $("#color-popup").html(colorselector);
+
+  $('#show-settings').bind('click', function(event) {
+		$('#show-settings').dropdown();
+    closedByButton = openedDropdown;
+  });
+  $(".dropdown").on("shown.bs.dropdown", function(event){
+    openedDropdown = true;
+  });
+  $(".dropdown").on("hide.bs.dropdown", function(event){
+    return closedByButton;
+  });
+  $(".dropdown").on("hidden.bs.dropdown", function(event){
+    openedDropdown = false;
+    closedByButton = false;
+  });
 
   /***********************
    * Model Name Stuff
