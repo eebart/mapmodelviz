@@ -40,6 +40,19 @@
       font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
     }
 
+    #playback-div {
+      position: absolute;
+      left: 10px;
+      bottom: 150px;
+      z-index: 1049;
+      font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+
+      .btn {
+        width:100%;
+      }
+    }
+
+
     .leaflet-tooltip.my-labels {
       background-color: transparent;
       border: transparent;

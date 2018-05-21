@@ -23,9 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   var slider = document.getElementById("the-slider");
   slider.oninput = function() {
-      config.currentIndex = this.value;
-      $('#current-time-val').html(config.currentIndex);
-      updateMapData();
+      config.currentIndex = config.timeSeries.indexOf(this.value);
+      $('#current-time-val').html(this.value);
+      updateMapData(true);
+      console.log('doing things');
   };
 
 });

@@ -676,7 +676,7 @@ var processData = function(allText, geoAreaId) {
 };
 var updateMapDataset = function(dataset) {
   config.timeSeries = dataset.timeSeries;
-  config.currentIndex = config.timeSeries[0];
+  config.currentIndex = 0;
   updateMapData();
   loadDetails();
 }

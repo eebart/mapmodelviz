@@ -25,7 +25,7 @@ export function findChoroplethMinMax() {
     return;
   }
 
-  var currIdx = config.timeSeries.indexOf(config.currentIndex);
+  var currIdx = config.currentIndex;
   for (var key in config.activePolicy.data) {
     if (config.activePolicy.data[key][config.mappedProperty] === undefined) {
       console.log('Invalid mapped property specified');
@@ -51,7 +51,7 @@ export function setChoroplethBuckets() {
     var numColors = config.choropleth.length;
     var range = config.choroplethDetails.max - config.choroplethDetails.min;
     var intervalSize = (range+0.0)/(numColors);
-    var currIdx = config.timeSeries.indexOf(config.currentIndex);
+    var currIdx = config.currentIndex;
 
     config.choroplethRanges = [];
     for (var i = 0; i < numColors; i++) {

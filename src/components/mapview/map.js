@@ -72,7 +72,7 @@ export function loadMap() {
   // buildChoroplethLegend();
 };
 
-export function updateMapData() {
+export function updateMapData(throughPlayback=false) {
   var invalid = false;
   if (config.activePolicy.data === null) {
     invalid = true;
@@ -90,10 +90,19 @@ export function updateMapData() {
     util.findChoroplethMinMax();
     util.setChoroplethBuckets();
     buildChoroplethLegend();
+    if (throughPlayback == false) {
+      displayPropertyTitle();
+      configureSlider();
+      configurePlayer();
+    }
     updateSlider();
   }
 
-  addGeoJSONLayer();
+  if (throughPlayback == false) {
+    addGeoJSONLayer();
+  } else {
+    updateGeoJSONLayer();
+  }
 };
 
 function highlightFeature(e) {
@@ -145,6 +154,12 @@ function onEachFeature(feature, layer) {
   });
 };
 
+function updateGeoJSONLayer() {
+  //TODO only do this method if you are updating and not selecting a new property
+  geoJSONLayer.setStyle(function(feature) {
+      return choroStyle(feature);
+  })
+};
 export function addGeoJSONLayer() {
   if (geoJSONLayer) {
     geoJSONLayer.setStyle(baseStyle);
@@ -219,6 +234,9 @@ function buildChoroplethLegend() {
       var upper = config.choroplethRanges[i + 1]
       if (upper > 10) {
         upper = util.numberWithCommas(Math.round(upper * 100) / 100);
+        if (lower <= 10) {
+          lower = util.numberWithCommas(Math.round(lower * 100) / 100);
+        }
       }
       div.innerHTML +=
         '<i style="background:' + config.choropleth[i] + '"></i> ' +
@@ -227,11 +245,7 @@ function buildChoroplethLegend() {
 
     return div;
   };
-
-
   legend.addTo(config.map);
-  configureSlider();
-  displayPropertyTitle();
 };
 
 export function displayPropertyTitle() {
@@ -244,6 +258,11 @@ export function displayPropertyTitle() {
 };
 
 export function configureSlider() {
+
+  if (config.timeSeries == null || config.timeSeries.length == 0) {
+    return;
+  }
+
   var slider = $("#slider");
   if (legend) {
     // var legendRight = parseInt($( ".legend" )[0].css('right').slice(0, -2));
@@ -260,31 +279,81 @@ export function configureSlider() {
     currentTime.css('width', legendWidth + 10 + 2);
     currentTime.css('left', thelegend.css('margin-left'));
     currentTime.css('bottom', legendHeight + 5 + 10 + 2 + 10);
-
-    $('#current-time-val').html(config.currentIndex);
-
-    currentTime.show();
   } else {
+    var currentTime = $("#current-time");
+    currentTime.css('width', 160);
+    currentTime.css('left', 10);
+    currentTime.css('bottom', 10 + 2 + 10);
+
     var viewportWidth = $("[id=map-viewport]").width();
     var sliderLeft = 15
     var sliderWidth = viewportWidth - sliderLeft * 2;
     slider.css('width', sliderWidth + 'px');
     slider.css('left', sliderLeft + 'px');
   }
+
+  var numPoints = config.timeSeries.length;
+  var min = config.timeSeries[0];
+  var max = config.timeSeries[numPoints-1];
+  $("[id=the-slider]").attr('min', min);
+  $("[id=the-slider]").attr('max', max);
+
+  $("[id=slider]").show();
+  $("#current-time").show();
 };
 export function updateSlider() {
-  if (config.activePolicy !== null && config.timeSeries !== null && config.timeSeries.length > 1 ) {
-    $("[id=slider]").show();
-  }
-
   if ($("[id=slider]").is(":visible") ) {
-    var numPoints = config.timeSeries.length;
-    var min = config.timeSeries[0];
-    var max = config.timeSeries[numPoints-1];
-    $("[id=the-slider]").attr('min', min);
-    $("[id=the-slider]").attr('max', max);
-    $("[id=the-slider]").attr('value', config.currentIndex)
-
-    $('#current-time-val').html(config.currentIndex);
+    var slide = $("[id=the-slider]")
+    $("[id=the-slider]").attr('value', config.timeSeries[config.currentIndex])
+    $('#current-time-val').html(config.timeSeries[config.currentIndex]);
   }
+};
+
+var currentlyPlaying = false;
+var playerConfigured = false;
+var timer = null;
+function configurePlayer(legendHeight, legendWidth, legendLeft) {
+  if (playerConfigured) {
+    if (currentlyPlaying) {
+      clearInterval(timer);   // stop the animation by clearing the interval
+      $('#run-playback').html('Play');   // change the button label to play
+      currentlyPlaying = false;   // change the status again
+    }
+  } else {
+    var thelegend = $( ".legend" );
+    var legendWidth = thelegend.width();
+    var legendHeight = thelegend.height();
+    var legendLeft = thelegend.css('margin-left')
+    var playback = $("#playback-div");
+    playback.css('width', legendWidth + 10 + 2);
+    playback.css('left', legendLeft);
+    playback.css('bottom', legendHeight + 5 + 10 + 2 + 10 + 30 + 5);
+    playback.show();
+
+    $('#run-playback').on("click", function(event) {
+      if (currentlyPlaying == false) {
+        timer = setInterval(function(){   // set a JS interval
+          if(config.currentIndex < config.timeSeries.length - 1) {
+            config.currentIndex +=1;  // increment the current attribute counter
+          } else {
+            config.currentIndex = 0;  // or reset it to zero
+          }
+          updateMapData(true);  // update the representation of the map
+        }, 500);
+
+        $('#run-playback').text('Stop');  // change the button label to stop
+        $('#run-playback').addClass('btn-dark');
+        $('#run-playback').removeClass('btn-primary');
+        currentlyPlaying = true;   // change the status of the animation
+      } else {    // else if is currently playing
+        clearInterval(timer);   // stop the animation by clearing the interval
+        $('#run-playback').text('Play');   // change the button label to play
+        $('#run-playback').removeClass('btn-dark');
+        $('#run-playback').addClass('btn-primary');
+        currentlyPlaying = false;   // change the status again
+      }
+    });
+    playerConfigured = true;
+  }
+
 };
