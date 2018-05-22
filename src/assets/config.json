@@ -3,7 +3,7 @@
   "allowFileUpload": true,
   "activePolicyName": "Energy Demand",
 
-  "playbackSpeed": 500, 
+  "playbackSpeed": 500,
 
   "jsonData": [{
     "name": "Energy Demand",
@@ -48,6 +48,23 @@
     "geoAreaId": "id",
     "mappedProperty": "total dom energy demand",
     "choroplethString": "GnBu[5]",
+    "displayStatus": "off",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/lowrescountries.geojson"
+      },
+      "text": "name"
+    }
+  },{
+    "name": "Renewables",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "id",
+    "mappedProperty": "pc renewables consumption of total energy consumption",
+    "choroplethString": "RdPu[7]",
     "displayStatus": "off",
     "geoJSON": {
       "file": {

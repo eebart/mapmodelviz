@@ -577,7 +577,7 @@ var updateDatasetDisplay = function(clickedIndex, displayStatus) {
   });
 
   if (update) {
-    loadModelData(); //TODO only update if you change primaries
+    loadModelData();
   }
 };
 

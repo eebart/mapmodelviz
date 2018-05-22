@@ -159,9 +159,8 @@ function onEachFeature(feature, layer) {
 };
 
 function updateGeoJSONLayer() {
-  //TODO only do this method if you are updating and not selecting a new property
   geoJSONLayer.setStyle(function(feature) {
-      if (feature == selectedFeature.feature) {
+      if (selectedFeature && feature == selectedFeature.feature) {
         style = choroStyle(feature);
         style.weight = 2;
         style.fillOpacity = 0.9;
@@ -171,33 +170,36 @@ function updateGeoJSONLayer() {
         return choroStyle(feature);
       }
   })
-
-
 };
-export function addGeoJSONLayer() {
-  if (geoJSONLayer) {
-    geoJSONLayer.setStyle(baseStyle);
-  }
 
+function getFeatureName() {
+  var featureName = config.activePolicy.geoJSON.text;
+  if (!featureName) {
+    featureName = '';
+  }
+  return featureName
+}
+function tooltipFunc(layer) {
+  var text = layer.feature.properties[getFeatureName()];
+  if (text === undefined) {
+    text = '';
+  }
+  return String(text);
+};
+
+export function addGeoJSONLayer() {
   if (config.activePolicy === null) {
     return;
   }
 
-  var featureName = config.activePolicy.geoJSON.text;
-  if (!featureName) {
-    featureName = '';
+  if (geoJSONLayer) {
+    config.map.removeLayer(geoJSONLayer);
   }
 
   geoJSONLayer = L.geoJSON(false, {
     style: choroStyle,
     onEachFeature: onEachFeature
-  }).bindTooltip(function(layer) {
-    var text = layer.feature.properties[featureName];
-    if (text === undefined) {
-      text = '';
-    }
-    return String(text);
-  }, {});
+  });
 
   var url = config.activePolicy.geoJSON.file.url;
   if (!url || url === '') {
@@ -210,18 +212,20 @@ export function addGeoJSONLayer() {
     details.showJsonLoaded();
     geoJSONLayer.addData(json);
     try {
-      var featureText = json['features'][0]['properties'][featureName]
-      if (!featureText) {
-        geoJSONLayer.unbindTooltip();
+      var featureText = json['features'][0]['properties'][getFeatureName()]
+      if (featureText) {
+        geoJSONLayer.bindTooltip(tooltipFunc, {});
       }
     } catch(err){
-      geoJSONLayer.unbindTooltip();
+      // geoJSONLayer.unbindTooltip();
     }
     config.map.addLayer(geoJSONLayer);
     config.map.fitBounds(geoJSONLayer.getBounds());
   }).fail(function(err) {
     console.error("Error rendering geojson map layer: " + err);
   });
+  // }
+
 };
 
 function buildChoroplethLegend() {
@@ -317,9 +321,7 @@ export function configureSlider() {
 };
 export function updateSlider() {
   if ($("[id=slider]").is(":visible") ) {
-    // console.log('Updating slider to ' + config.timeSeries[config.currentIndex])
-    $("[id=the-slider]").attr('value', config.timeSeries[config.currentIndex])
-    // console.log($("[id=the-slider]"))
+    document.getElementById('the-slider').value = config.timeSeries[config.currentIndex]
     $('#current-time-val').html(config.timeSeries[config.currentIndex]);
   }
 };
@@ -333,6 +335,16 @@ function configurePlayer(legendHeight, legendWidth, legendLeft) {
       clearInterval(timer);   // stop the animation by clearing the interval
       $('#run-playback').html('Play');   // change the button label to play
       currentlyPlaying = false;   // change the status again
+    } else {
+      var thelegend = $( ".legend" );
+      var legendWidth = thelegend.width();
+      var legendHeight = thelegend.height();
+      var legendLeft = thelegend.css('margin-left')
+      var playback = $("#playback-div");
+      playback.css('width', legendWidth + 10 + 2);
+      playback.css('left', legendLeft);
+      playback.css('bottom', legendHeight + 5 + 10 + 2 + 10 + 30 + 5);
+      playback.show();
     }
   } else {
     var thelegend = $( ".legend" );
@@ -349,6 +361,7 @@ function configurePlayer(legendHeight, legendWidth, legendLeft) {
       if (currentlyPlaying == false) {
         $("#show-settings").removeClass('active');
         $("#show-settings").addClass('disabled');
+        // $("#the-slider").attr("disabled", true);
 
         timer = setInterval(function(){   // set a JS interval
           if(config.currentIndex < config.timeSeries.length - 1) {
@@ -370,6 +383,7 @@ function configurePlayer(legendHeight, legendWidth, legendLeft) {
         $('#run-playback').addClass('btn-primary');
         currentlyPlaying = false;   // change the status again
 
+        // $("#the-slider").attr("disabled", false);
         $("#show-settings").addClass('active');
         $("#show-settings").removeClass('disabled');
       }
