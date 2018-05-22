@@ -10,7 +10,7 @@
       position: absolute;
       left: 150px;
       bottom: 25px;
-      z-index: 1049;
+      z-index: 1001;
     }
 
     .map-box {
@@ -26,7 +26,7 @@
       position: absolute;
       top: 10px;
       overflow-x: scroll;
-      z-index: 1049;
+      z-index: 1001;
       text-align: center;
       font-weight:bold;
     }
@@ -35,7 +35,7 @@
       position: absolute;
       left: 10px;
       bottom: 120px;
-      z-index: 1049;
+      z-index: 1001;
       @extend .map-box;
       font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
     }
@@ -44,7 +44,7 @@
       position: absolute;
       left: 10px;
       bottom: 150px;
-      z-index: 1049;
+      z-index: 1001;
       font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
 
       .btn {

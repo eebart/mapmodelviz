@@ -62,6 +62,17 @@
   }
 }
 
+form {
+  &.was-validated {
+    .custom-file-label {
+      &.is-invalid {
+        border-color: #dc3545 !important;
+      }
+    }
+  }
+}
+
+
 .settings-value {
   display: inline-block;
   white-space: nowrap;

@@ -65,7 +65,7 @@ var btnGroupHandlerUpdate = function(event) {
   var target = event.target;
   if (!target.id.includes('dataset')) {
     var desc = target.id.split('_');
-    updateDatasetDisplay(desc[0], desc[2]);
+    updateDatasetDisplay(desc[0], desc[2], false);
   }
 };
 
@@ -114,13 +114,25 @@ var loadSettings = function() {
 
   $("#dataset-form").on("submit", function(event) {
     var theform = $("#dataset-form")[0];
-    if (theform.checkValidity() === false || pendingChoropleth === null) {
+    if (theform.checkValidity() === false
+        || pendingChoropleth === null
+        || $("#geojson-file-selected-name").html() === ''
+        || $("#policy-file-selected-name").html() === '') {
       event.preventDefault();
       event.stopPropagation();
       theform.classList.add('was-validated');
       if (pendingChoropleth === null) {
         $('#current-color-settings').addClass('is-invalid')
+      } else {
+        $('#current-color-settings').addClass('is-valid');
       }
+      if ($("#geojson-file-selected-name").html() === '') {
+        $('#geojson-file-selected-name').addClass('is-invalid')
+      }
+      if ($("#policy-file-selected-name").html() === '') {
+        $('#policy-file-selected-name').addClass('is-invalid')
+      }
+
       return false;
     }
     var formtype = $("#dataset-form").attr('formtype');
@@ -291,6 +303,11 @@ var buildButton = function(id, displayType, activeClass, disabledClass) {
 
 var newDataset = function() {
   $('#model_modal_title').html('Add Model Data Configuration');
+  $('#dataset-form').removeClass('was-validated');
+  $('#current-color-settings').removeClass('is-invalid');
+  $('#current-color-settings').removeClass('is-valid');
+  $('#policy-file-selected-name').removeClass('is-invalid');
+  $('#geojson-file-selected-name').removeClass('is-invalid');
 
   //TODO reset all form fields
   $("#new_policy_name").val('');
@@ -300,6 +317,11 @@ var newDataset = function() {
   $("#mapped_property_name").val('');
   $("#geo_display_property").val('');
   $("#current-color-settings").html('');
+
+  $("#scale_logarithmic").checked = false;
+  $("#scale_logarithmic_label").removeClass('active');
+  $("#scale_linear").checked = true;
+  $("#scale_linear_label").addClass('active');
 
   $("#dataset_primary").checked = false;
   $("#dataset_primary_label").removeClass('active');
@@ -323,6 +345,12 @@ var editDataset = function(row) {
 
   $('#model_modal_title').html('Edit Model Data Configuration');
 
+  $('#dataset-form').removeClass('was-validated');
+  $('#current-color-settings').removeClass('is-invalid');
+  $('#current-color-settings').removeClass('is-valid');
+  $('#policy-file-selected-name').removeClass('is-invalid');
+  $('#geojson-file-selected-name').removeClass('is-invalid');
+
   $('#current-color-settings-holder').addClass('col-sm-6');
   $('#current-color-settings-holder').removeClass('col-sm-9');
 
@@ -343,6 +371,12 @@ var viewDataset = function(row) {
   var dataToEdit = row.children[0].innerText;
 
   $('#model_modal_title').html('View Model Data Configuration');
+
+  $('#dataset-form').removeClass('was-validated');
+  $('#current-color-settings').removeClass('is-invalid');
+  $('#current-color-settings').removeClass('is-valid');
+  $('#policy-file-selected-name').removeClass('is-invalid');
+  $('#geojson-file-selected-name').removeClass('is-invalid');
 
   $("#new_policy_name").attr("disabled", "disabled");
   $("#geojson-file-selector").attr("disabled", "disabled");
@@ -389,6 +423,20 @@ var loadModelDetails = function(dataToEdit) {
   pendingChoroplethString = openDataset.choroplethString;
   pendingChoropleth = choropleth;
 
+  if (openDataset.scale == 'linear') {
+    $("#scale_linear").checked = true;
+    $("#scale_linear_label").addClass('active');
+
+    $("#scale_logarithmic_label").removeClass("active");
+    $("#scale_logarithmic").checked = false;
+  } else if (openDataset.scale == 'logarithmic') {
+    $("#scale_linear").checked = false;
+    $("#scale_linear_label").removeClass('active');
+
+    $("#scale_logarithmic_label").addClass("active");
+    $("#scale_logarithmic").checked = true;
+  }
+
   if (openDataset.displayStatus === 'primary') {
     $("#dataset_primary").checked = true;
     $("#dataset_primary_label").addClass('active');
@@ -420,12 +468,12 @@ var loadModelDetails = function(dataToEdit) {
 /** Model Data Changes **/
 var saveModelDetails_OK = function() {
   var displayStatus = $('#dataset-display label.active input').val();
-  if (openDataset.displayStatus !== displayStatus) {
-    // openDataset.displayStatus = displayStatus;
+  var scale = $('#scale-display label.active input').val();
+  if (openDataset.displayStatus !== displayStatus || openDataset.scale !== scale) {
     for (var i = 0; i < config.jsonData.length; i++) {
       if (config.jsonData[i].name === openDataset.name) {
         selectDisplayButton(i,displayStatus);
-        updateDatasetDisplay(i,displayStatus);
+        updateDatasetDisplay(i,displayStatus, openDataset.scale == scale);
         return;
       }
     }
@@ -434,10 +482,12 @@ var saveModelDetails_OK = function() {
 };
 var saveModelDetails = function() {
   var displayStatus = $('#dataset-display label.active input').val();
+  var scale = $('#scale-display label.active input').val();
 
   var updatedDataset = buildDataset();
 
   var changed = false;
+  var scaleChanged = false;
   if (openDataset.name !== updatedDataset.name) {
     changed = true;
     openDataset.name = updatedDataset.name;
@@ -460,7 +510,11 @@ var saveModelDetails = function() {
   }
   if (openDataset.displayStatus !== updatedDataset.displayStatus) {
     changed = true;
-    // openDataset.displayStatus = updatedDataset.displayStatus; Done later in updateDatasetDisplay
+  }
+  if (openDataset.scale !== updatedDataset.scale) {
+    changed = true;
+    scaleChanged = true;
+    openDataset.scale = updatedDataset.scale;
   }
   if (openDataset.choroplethString !== updatedDataset.choroplethString) {
     changed = true;
@@ -476,7 +530,7 @@ var saveModelDetails = function() {
     for (var i = 0; i < config.jsonData.length; i++) {
       if (config.jsonData[i].name === openDataset.name) {
         selectDisplayButton(i,displayStatus);
-        updateDatasetDisplay(i,displayStatus);
+        updateDatasetDisplay(i,displayStatus, scaleChanged);
         return;
       }
     }
@@ -493,7 +547,7 @@ var addModelDetails = function() {
   config.jsonData.push(buildDataset());
 
   addModelDataRow(config.jsonData[config.jsonData.length - 1]);
-  updateDatasetDisplay(config.jsonData.length - 1, displayStatus);
+  updateDatasetDisplay(config.jsonData.length - 1, displayStatus, true);
 
   openDataset = null;
 
@@ -504,6 +558,7 @@ var buildDataset = function() {
   var newDataset = {
     name: $("#new_policy_name").val(),
     data: null,
+    scale: $('#scale-display label.active input').val(),
     file: $("#policy-file-selector")[0].files[0],
     geoAreaId: $("#geo_id_property").val(),
     mappedProperty: $("#mapped_property_name").val(),
@@ -536,14 +591,17 @@ var selectDisplayButton = function(index, displayStatus) {
 };
 
 // Select a new active policy from the main settings window
-var updateDatasetDisplay = function(clickedIndex, displayStatus) {
+var updateDatasetDisplay = function(clickedIndex, displayStatus, scaleChanged=false) {
   var update = false;
   config.jsonData.forEach(function(dataset, index) {
     if (displayStatus === 'primary') {
       if (parseInt(clickedIndex) === index) {
         if (dataset.displayStatus !== 'primary') {
           update = true;
+        } else if (dataset.displayStatus === 'primary' && scaleChanged) {
+          update = true;
         }
+
         dataset.displayStatus = 'primary';
         config.activePolicy = dataset;
         config.activePolicyName = dataset.name;

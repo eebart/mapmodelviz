@@ -18,7 +18,7 @@
                 <div class="col-9">
                     <div class="input-group">
                       <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="policy-file-selector" required>
+                        <input type="file" class="custom-file-input" id="policy-file-selector">
                         <label class="custom-file-label" id="policy-file-selected-name" for="policy-file-selector"></label>
                       </div>
                     </div>
@@ -29,7 +29,7 @@
                 <div class="col-9">
                     <div class="input-group">
                       <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="geojson-file-selector" required>
+                        <input type="file" class="custom-file-input" id="geojson-file-selector">
                         <label class="custom-file-label" id="geojson-file-selected-name" for="geojson-file-selector"></label>
                       </div>
                     </div>
@@ -65,6 +65,17 @@
                       <div id="current-color-settings" class="choropleth-display form-control choropleth-select-display"></div>
                       <label class=""></label>
                     </div>
+                </div>
+            </div>
+            <div class="row form-group">  <!-- Scale -->
+                <label for="new_policy_name" class="col-3 col-form-label">Scale</label>
+                <div id="scale-display" class="btn-group btn-group-toggle col-9" data-toggle="buttons">
+                  <label class="btn btn-secondary active" id="scale_linear_label">
+                    <input type="radio" name="options" id="scale_linear" value="linear" autocomplete="off" checked> Linear
+                  </label>
+                  <label class="btn btn-secondary" id="scale_logarithmic_label">
+                    <input type="radio" name="options" id="scale_logarithmic" value="logarithmic" autocomplete="off"> Logarithmic
+                  </label>
                 </div>
             </div>
             <div class="row form-group">
