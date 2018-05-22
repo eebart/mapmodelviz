@@ -638,7 +638,7 @@ var loadCSVData = function(dataset, url, update) {
         updateFeatureDetails();
       }
     },
-    error: function(data) {
+    error: function(err) {
       console.error( "error loading model data: " + err );
       loadDetails();
     }

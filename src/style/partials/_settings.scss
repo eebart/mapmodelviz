@@ -37,6 +37,14 @@
   }
 }
 
+.dropup {
+  &.show {
+    .dropdown-toggle {
+      @include caret(down);
+    }
+  }
+}
+
 .disabled-file-selector {
   background-color: $input-disabled-bg;
 }
