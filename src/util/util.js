@@ -44,9 +44,53 @@ export function findChoroplethMinMax() {
   }
   config.choroplethDetails.min = min;
   config.choroplethDetails.max = max;
-}
+};
 
-export function setChoroplethBuckets() {
+export function findChoroplethMinMaxOverall() {
+  var min = Infinity;
+  var max = -Infinity;
+
+  if (config.activePolicy === null) {
+    config.choroplethDetails = {
+      min: -Infinity,
+      max: Infinity
+    };
+    return;
+  }
+
+  var currIdx = config.currentIndex;
+  var data = config.activePolicy.data;
+  for (var key in config.activePolicy.data) {
+    if (config.activePolicy.data[key][config.mappedProperty] === undefined) {
+      console.log('Invalid mapped property specified');
+      return;
+    }
+    var activeData = config.activePolicy.data[key][config.mappedProperty].slice();
+    for(var i=0; i<activeData.length;i++) activeData[i] = +(activeData[i].trim());
+    var currMin = Math.min.apply(Math, activeData);
+    var currMax = Math.max.apply(Math, activeData);
+    if (isNaN(currMin)) {
+      console.log('Invalid min number, not considering.')
+    } else {
+      if (currMin < min) {
+        min = currMin;
+      }
+    }
+    if (isNaN(currMax)) {
+      console.log('Invalid max number, not considering.')
+    } else {
+      if (currMax > max) {
+        max = currMax;
+      }
+    }
+  }
+  config.choroplethDetails.min = min;
+  config.choroplethDetails.max = max;
+
+  // setChoroplethRanges();
+};
+
+export function setChoroplethRanges() {
   if (config.choropleth !== null) {
     var numColors = config.choropleth.length;
     var range = config.choroplethDetails.max - config.choroplethDetails.min;
@@ -58,6 +102,21 @@ export function setChoroplethBuckets() {
       config.choroplethRanges[i] = config.choroplethDetails.min + intervalSize*i;
     }
     config.choroplethRanges[i] = config.choroplethDetails.max;
+  } else {
+    config.choroplethDetails = {
+      min: -Infinity,
+      max: Infinity
+    };
+    config.choroplethRanges = [];
+  }
+};
+
+export function setChoroplethBuckets() {
+  if (config.choropleth !== null) {
+    var numColors = config.choropleth.length;
+    var range = config.choroplethDetails.max - config.choroplethDetails.min;
+    var intervalSize = (range+0.0)/(numColors);
+    var currIdx = config.currentIndex;
     for (var key in config.activePolicy.data) {
       var choroplethNum = numColors - 1;
       if (config.activePolicy.data[key][config.mappedProperty] === undefined) {

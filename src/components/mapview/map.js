@@ -87,10 +87,14 @@ export function updateMapData(throughPlayback=false) {
   }
 
   if (!invalid) {
-    util.findChoroplethMinMax();
-    util.setChoroplethBuckets();
-    buildChoroplethLegend();
+    // ORDER MATTERS HERE!!
     if (throughPlayback == false) {
+      util.findChoroplethMinMaxOverall();
+      util.setChoroplethRanges();
+    }
+    util.setChoroplethBuckets();
+    if (throughPlayback == false) {
+      buildChoroplethLegend();
       displayPropertyTitle();
       configureSlider();
       configurePlayer();
@@ -157,8 +161,18 @@ function onEachFeature(feature, layer) {
 function updateGeoJSONLayer() {
   //TODO only do this method if you are updating and not selecting a new property
   geoJSONLayer.setStyle(function(feature) {
-      return choroStyle(feature);
+      if (feature == selectedFeature.feature) {
+        style = choroStyle(feature);
+        style.weight = 2;
+        style.fillOpacity = 0.9;
+        return style;
+      }
+      else {
+        return choroStyle(feature);
+      }
   })
+
+
 };
 export function addGeoJSONLayer() {
   if (geoJSONLayer) {
@@ -303,8 +317,9 @@ export function configureSlider() {
 };
 export function updateSlider() {
   if ($("[id=slider]").is(":visible") ) {
-    var slide = $("[id=the-slider]")
+    // console.log('Updating slider to ' + config.timeSeries[config.currentIndex])
     $("[id=the-slider]").attr('value', config.timeSeries[config.currentIndex])
+    // console.log($("[id=the-slider]"))
     $('#current-time-val').html(config.timeSeries[config.currentIndex]);
   }
 };
@@ -332,6 +347,9 @@ function configurePlayer(legendHeight, legendWidth, legendLeft) {
 
     $('#run-playback').on("click", function(event) {
       if (currentlyPlaying == false) {
+        $("#show-settings").removeClass('active');
+        $("#show-settings").addClass('disabled');
+
         timer = setInterval(function(){   // set a JS interval
           if(config.currentIndex < config.timeSeries.length - 1) {
             config.currentIndex +=1;  // increment the current attribute counter
@@ -351,6 +369,9 @@ function configurePlayer(legendHeight, legendWidth, legendLeft) {
         $('#run-playback').removeClass('btn-dark');
         $('#run-playback').addClass('btn-primary');
         currentlyPlaying = false;   // change the status again
+
+        $("#show-settings").addClass('active');
+        $("#show-settings").removeClass('disabled');
       }
     });
     playerConfigured = true;
