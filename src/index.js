@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
       config.currentIndex = config.timeSeries.indexOf(this.value);
       $('#current-time-val').html(this.value);
       updateMapData(true);
-      console.log('doing things');
   };
 
 });

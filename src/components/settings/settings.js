@@ -737,25 +737,20 @@ var saveChoroplethSelection = function() {
 
 /** Export Config **/
 var saveConfigAsFile = function() {
-  var config = {
+  var savedConfig = {
     modelName: config.modelName,
-
+    playbackSpeed: config.playbackSpeed,
     choroplethString: config.choroplethString,
-    geoJson: {
-      file: {
-        name: config.geoJson.file.name
-      },
-      text: config.geoJson.text
-    },
     jsonData: config.jsonData,
     activePolicyName: config.activePolicy.name
   };
-  config.jsonData.forEach(function(dataset) {
+  savedConfig.jsonData.forEach(function(dataset) {
     delete dataset.data;
+    delete dataset.timeseries;
   });
-  config.allowFileUpload = $("[id=allow-file-change]").hasClass('active');
+  savedConfig.allowFileUpload = $("[id=allow-file-change]").hasClass('active');
 
-  var textToWrite = JSON.stringify(config);
+  var textToWrite = JSON.stringify(savedConfig);
   var textFileAsBlob = new Blob([textToWrite], { type: 'text/json' });
   var fileNameToSaveAs = "config.json";
 

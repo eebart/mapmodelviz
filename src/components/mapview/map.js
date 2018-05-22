@@ -339,7 +339,7 @@ function configurePlayer(legendHeight, legendWidth, legendLeft) {
             config.currentIndex = 0;  // or reset it to zero
           }
           updateMapData(true);  // update the representation of the map
-        }, 500);
+        }, config.playbackSpeed);
 
         $('#run-playback').text('Stop');  // change the button label to stop
         $('#run-playback').addClass('btn-dark');
