@@ -7,6 +7,7 @@
 
   "jsonData": [{
     "name": "Energy Demand",
+    "scale": "linear",
     "file": {
       "name": "worlddata.csv",
       "url": "assets/worlddata.csv"
@@ -24,6 +25,7 @@
     }
   },{
     "name": "Energy Demand Multiplied",
+    "scale": "linear",
     "file": {
       "name": "multiplied.csv",
       "url": "assets/multiplied.csv"
@@ -41,6 +43,7 @@
     }
   },{
     "name": "Energy Demand Doubled",
+    "scale": "logarithmic",
     "file": {
       "name": "doubled.csv",
       "url": "assets/doubled.csv"
@@ -58,6 +61,7 @@
     }
   },{
     "name": "Renewables",
+    "scale": "linear",
     "file": {
       "name": "worlddata.csv",
       "url": "assets/worlddata.csv"

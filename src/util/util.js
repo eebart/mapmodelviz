@@ -91,23 +91,35 @@ export function findChoroplethMinMaxOverall() {
 };
 
 export function setChoroplethRanges() {
-  if (config.choropleth !== null) {
-    var numColors = config.choropleth.length;
-    var range = config.choroplethDetails.max - config.choroplethDetails.min;
-    var intervalSize = (range+0.0)/(numColors);
-    var currIdx = config.currentIndex;
-
-    config.choroplethRanges = [];
-    for (var i = 0; i < numColors; i++) {
-      config.choroplethRanges[i] = config.choroplethDetails.min + intervalSize*i;
-    }
-    config.choroplethRanges[i] = config.choroplethDetails.max;
-  } else {
+  if (config.choropleth === null) {
     config.choroplethDetails = {
       min: -Infinity,
       max: Infinity
     };
     config.choroplethRanges = [];
+
+    return;
+  }
+
+  var numColors = config.choropleth.length;
+  var range = config.choroplethDetails.max - config.choroplethDetails.min;
+
+  if (config.activePolicy.scale === 'linear') {
+    var intervalSize = (range+0.0)/(numColors);
+    config.choroplethRanges = [];
+    for (var i = 0; i < numColors; i++) {
+      config.choroplethRanges[i] = config.choroplethDetails.min + intervalSize*i;
+    }
+    config.choroplethRanges[i] = config.choroplethDetails.max;
+  } else if (config.activePolicy.scale === 'logarithmic') {
+    config.choroplethRanges = [];
+
+    var scale = (config.choroplethDetails.max - config.choroplethDetails.min) / Math.log(1.0 + numColors);
+    config.choroplethRanges[0] = config.choroplethDetails.min;
+    for (var i = 0; i < numColors - 1; i++) {
+      config.choroplethRanges[i+1] = config.choroplethDetails.min + Math.log(2.0 + i) * scale;
+    }
+    config.choroplethRanges[i+1] = config.choroplethDetails.max;
   }
 };
 

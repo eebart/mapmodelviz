@@ -228,6 +228,28 @@ export function addGeoJSONLayer() {
 
 };
 
+function buildNumString(num) {
+  if (num > 10**12) {
+    // num = util.numberWithCommas(Math.round(num/10**12)) + 't';
+    num = util.numberWithCommas(Math.round(num));
+  } else if (num > 10**9) {
+    // num = util.numberWithCommas(Math.round(num/10**9)) + 'b';
+    num = util.numberWithCommas(Math.round(num));
+  } else if (num > 10**6) {
+    // num = util.numberWithCommas(Math.round(num/10**6)) + 'm';
+    num = util.numberWithCommas(Math.round(num));
+  } else if (num > 10**3) {
+    num = util.numberWithCommas(Math.round(num));
+  } else if (num > 10) {
+    num = util.numberWithCommas(Math.round(num * 100) / 100);
+  } else if (num > 1) {
+    num = util.numberWithCommas(Math.round(num * 100) / 100);
+  } else {
+    num = util.numberWithCommas(Math.round(num * 10000) / 10000);
+  }
+  return num
+};
+
 function buildChoroplethLegend() {
   if (legend !== null) {
     legend.remove();
@@ -245,20 +267,17 @@ function buildChoroplethLegend() {
     var div = L.DomUtil.create('div', 'info legend');
 
     for (var i = 0; i < config.choropleth.length; i++) {
-      var lower = config.choroplethRanges[i]
-      if (lower > 10) {
-        lower = util.numberWithCommas(Math.round(lower * 100) / 100);
-      }
-      var upper = config.choroplethRanges[i + 1]
-      if (upper > 10) {
-        upper = util.numberWithCommas(Math.round(upper * 100) / 100);
-        if (lower <= 10) {
-          lower = util.numberWithCommas(Math.round(lower * 100) / 100);
-        }
+      var lower = config.choroplethRanges[i];
+      var upper = config.choroplethRanges[i + 1];
+      var lowerStr = buildNumString(lower);
+      var upperStr = buildNumString(upper);
+
+      if (upper > 10 && lower <=1) {
+        lowerStr = util.numberWithCommas(Math.round(lower * 100) / 100);
       }
       div.innerHTML +=
         '<i style="background:' + config.choropleth[i] + '"></i> ' +
-        lower + ' to ' + upper + '<br>';
+        lowerStr + ' to ' + upperStr + '<br>';
     }
 
     return div;
@@ -329,7 +348,7 @@ export function updateSlider() {
 var currentlyPlaying = false;
 var playerConfigured = false;
 var timer = null;
-function configurePlayer(legendHeight, legendWidth, legendLeft) {
+function configurePlayer() {
   if (playerConfigured) {
     if (currentlyPlaying) {
       clearInterval(timer);   // stop the animation by clearing the interval
@@ -337,24 +356,20 @@ function configurePlayer(legendHeight, legendWidth, legendLeft) {
       currentlyPlaying = false;   // change the status again
     } else {
       var thelegend = $( ".legend" );
-      var legendWidth = thelegend.width();
-      var legendHeight = thelegend.height();
-      var legendLeft = thelegend.css('margin-left')
+      var currentTime = $("#current-time");
       var playback = $("#playback-div");
-      playback.css('width', legendWidth + 10 + 2);
-      playback.css('left', legendLeft);
-      playback.css('bottom', legendHeight + 5 + 10 + 2 + 10 + 30 + 5);
+      playback.css('width', thelegend.width() + 10 + 2);
+      playback.css('left', thelegend.css('margin-left'));
+      playback.css('bottom', thelegend.height() + 5 + 10 + 2 + 10 + currentTime.height() + 10 + 2 + 5); // +10+2 is the padding and border for elements. +5 is margin between
       playback.show();
     }
   } else {
     var thelegend = $( ".legend" );
-    var legendWidth = thelegend.width();
-    var legendHeight = thelegend.height();
-    var legendLeft = thelegend.css('margin-left')
+    var currentTime = $("#current-time");
     var playback = $("#playback-div");
-    playback.css('width', legendWidth + 10 + 2);
-    playback.css('left', legendLeft);
-    playback.css('bottom', legendHeight + 5 + 10 + 2 + 10 + 30 + 5);
+    playback.css('width', thelegend.width() + 10 + 2);
+    playback.css('left', thelegend.css('margin-left'));
+    playback.css('bottom', thelegend.height() + 5 + 10 + 2 + 10 + currentTime.height() + 10 + 2 + 5); // +10+2 is the padding and border for elements. +5 is margin between
     playback.show();
 
     $('#run-playback').on("click", function(event) {

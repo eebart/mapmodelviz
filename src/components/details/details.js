@@ -92,7 +92,7 @@ var getFormattedNumber = function(value) {
   }
 }
 
-var getOptions = function(title, displayLegend) {
+var getOptions = function(title, displayLegend, scaleType) {
   var options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -134,9 +134,28 @@ var getOptions = function(title, displayLegend) {
       }],
       yAxes: [{
         display: true,
+        type: scaleType,
         ticks: {
+          autoSkip: true,
           callback: function(value, index, values) {
-            return getFormattedNumber(value);
+            if (scaleType == "logarithmic" && values.length > 5 ) {
+              if (index == 0 || index == values.length - 1 || index == Math.round(values.length/4) || index == Math.round(values.length/4 * 3)) {
+                return getFormattedNumber(value);
+              } else {
+                return '';
+              }
+            //   console.log("long values length, checking things", title, index);
+            //   console.log(values.length, values)
+            //   if (index % 2 == 0) {
+            //     console.log("printing formatted")
+            //     return "";
+            //   } else {
+            //     console.log("printing blank");
+            //     return '';
+            //   }
+            } else {
+              return getFormattedNumber(value);
+            }
           }
         },
         scaleLabel: {
@@ -207,7 +226,7 @@ var showPrimaryChart = function(feature) {
         primaryLineChart = new Chart(ctx, {
           type: 'line',
           data: data,
-          options: getOptions(config.mappedProperty, displayLegend)
+          options: getOptions(config.mappedProperty, displayLegend, config.activePolicy.scale)
         });
       }
       break;
@@ -253,7 +272,7 @@ var showSecondaryCharts = function(feature) {
             };
             datas.push(data);
             var showLegend = secondary.length > 0;
-            options.push(getOptions(key, showLegend));
+            options.push(getOptions(key, showLegend, config.activePolicy.scale));
           }
         }
         break;
