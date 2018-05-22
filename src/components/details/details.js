@@ -7,6 +7,8 @@ import { numberWithCommas } from '../../util/util.js';
 
 var detailshtml = require('./details.html');
 
+var selectedFeature = null;
+
 export function loadDetails() {
   $("#details-content").html(detailshtml);
   $("[id=invalid-primary-key]").hide();
@@ -22,13 +24,6 @@ export function showJsonLoaded() {
   $("[id=region-selected]").hide();
 };
 
-export function hideFeatureDetails() {
-  $("[id=invalid-primary-key]").hide();
-  $("[id=no-region-selected]").show();
-  $("[id=region-selected]").hide();
-  $("[id=no-json-loaded]").hide();
-};
-
 function showInvalidRegionID() {
   $("[id=invalid-primary-key]").show();
   $("[id=no-region-selected]").hide();
@@ -37,6 +32,8 @@ function showInvalidRegionID() {
 }
 
 export function showFeatureDetails(feature) {
+  selectedFeature = feature;
+
   $("[id=no-region-selected]").hide();
   $("[id=no-json-loaded]").hide();
   $("[id=invalid-primary-key]").hide();
@@ -57,6 +54,20 @@ export function showFeatureDetails(feature) {
 
   showPrimaryChart(feature);
   showSecondaryCharts(feature);
+};
+export function hideFeatureDetails() {
+  $("[id=invalid-primary-key]").hide();
+  $("[id=no-region-selected]").show();
+  $("[id=region-selected]").hide();
+  $("[id=no-json-loaded]").hide();
+
+  selectedFeature = null;
+};
+export function updateFeatureDetails() {
+  if (selectedFeature) {
+    showPrimaryChart(selectedFeature);
+    showSecondaryCharts(selectedFeature);
+  }
 };
 
 var getFormattedNumber = function(value) {
@@ -81,7 +92,7 @@ var getFormattedNumber = function(value) {
   }
 }
 
-var getOptions = function(title) {
+var getOptions = function(title, displayLegend) {
   var options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -92,7 +103,8 @@ var getOptions = function(title) {
     legend: {
 			labels: {
 				usePointStyle: true
-      }
+      },
+      display: displayLegend
     },
     tooltips: {
       mode: 'index',
@@ -134,7 +146,6 @@ var getOptions = function(title) {
       }]
     }
   };
-
   return options;
 };
 var getDataset = function(label, color, data) {
@@ -192,10 +203,11 @@ var showPrimaryChart = function(feature) {
         if (primaryLineChart) {
           primaryLineChart.destroy();
         }
+        var displayLegend = secondary.length > 0;
         primaryLineChart = new Chart(ctx, {
           type: 'line',
           data: data,
-          options: getOptions(config.mappedProperty)
+          options: getOptions(config.mappedProperty, displayLegend)
         });
       }
       break;
@@ -240,7 +252,8 @@ var showSecondaryCharts = function(feature) {
               datasets: dataVals
             };
             datas.push(data);
-            options.push(getOptions(key));
+            var showLegend = secondary.length > 0;
+            options.push(getOptions(key, showLegend));
           }
         }
         break;
@@ -263,12 +276,6 @@ var showSecondaryCharts = function(feature) {
     div += '</div>';
     charts.append(div);
   }
-
-  // var maxHeight = 0;
-  // $(".chart-title-secondary").each(function(){
-  //    if ($(this).height() > maxHeight) { maxHeight = $(this).height(); }
-  // });
-  // $(".chart-title-secondary").height(maxHeight);
 
   for(i = 0; i < datas.length; i++) {
     var ctx = $('#chart-'+i);

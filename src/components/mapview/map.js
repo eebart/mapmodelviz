@@ -267,7 +267,7 @@ export function displayPropertyTitle() {
   var propTitle = $("#mapped-property-title");
   propTitle.css('width', viewportWidth - 50 * 2);
   propTitle.css('left', 50);
-  propTitle.html('Displayed: ' + config.activePolicy.name);
+  propTitle.html('<h3>' + config.activePolicy.name + '</h3>');
   propTitle.show();
 };
 

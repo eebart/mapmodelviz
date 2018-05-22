@@ -1,7 +1,7 @@
 import choroplethColors from '../../util/colors.js';
 import { displayMessage } from '../../util/util.js';
 import { updateMapData, addGeoJSONLayer } from '../mapview/map.js';
-import { loadDetails } from '../details/details.js';
+import { loadDetails, updateFeatureDetails } from '../details/details.js';
 
 var policieshtml = require('./policies.html');
 var nameselector = require('./nameSelector.html');
@@ -522,7 +522,7 @@ var buildDataset = function() {
   return newDataset;
 
 }
-var selectDisplayButton = function(index,displayStatus) {
+var selectDisplayButton = function(index, displayStatus) {
   $('#' + index + '_display_' + 'primary' + '_label').removeClass("active");
   $('#' + index + '_display_' + 'primary').checked = false;
   $('#' + index + '_display_' + 'secondary' + '_label').removeClass("active");
@@ -532,6 +532,7 @@ var selectDisplayButton = function(index,displayStatus) {
 
   $('#' + index + '_display_' + displayStatus + '_label').addClass("active");
   $('#' + index + '_display_' + displayStatus).checked = true;
+
 };
 
 // Select a new active policy from the main settings window
@@ -569,6 +570,7 @@ var updateDatasetDisplay = function(clickedIndex, displayStatus) {
           loadCSVData(dataset, url, false);
         } else {
           dataset.data = null;
+          updateFeatureDetails();
         }
       }
     }
@@ -632,6 +634,8 @@ var loadCSVData = function(dataset, url, update) {
       dataset.timeSeries = parsed.timeSeries
       if (update) {
         updateMapDataset(dataset);
+      } else {
+        updateFeatureDetails();
       }
     },
     error: function(data) {
