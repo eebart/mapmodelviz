@@ -20,11 +20,6 @@ The model data must be a CSV document with the following column structure:
 
 Here's an example in table form. Notice how the time series data is saved as column headers led by a header called Time, which lines up with the names of properties that the data represents.
 
-| First Header  | Second Header |
-| ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
-
 | Geo_ID        | Country       | Time          | 2000          | 2001          | 2002          | ...           | 
 | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | 
 | USA | United States | total_pop | 500 | 596 | 795 | ... | 
