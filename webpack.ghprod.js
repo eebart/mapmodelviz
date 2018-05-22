@@ -13,9 +13,6 @@ module.exports = merge(common, {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')
     }),
-    new CopyWebpackPlugin([
-       { from: './src/assets/', to: 'assets/' },
-     ], {}),
   ],
   // mode: "production"
 });

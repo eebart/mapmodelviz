@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --open --config webpack.dev.js",
     "build:prod": "webpack --config webpack.prod.js",
+    "build:gh": "webpack --config webpack.ghprod.js",
     "build:dev": "webpack --config webpack.dev.js"
   },
   "keywords": [],

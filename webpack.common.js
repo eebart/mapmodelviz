@@ -82,7 +82,6 @@ module.exports = {
    }),
    extractPlugin,
    new CopyWebpackPlugin([
-      { from: './src/assets/', to: 'assets/' },
       { from: './src/style/img/', to: 'img/' }
     ], {}),
   ],
