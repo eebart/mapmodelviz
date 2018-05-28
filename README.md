@@ -11,6 +11,7 @@ Instead of case-by-case visualization (which is what so many modeling projects h
 ## Data Requirements
 MapModelViz uses two sources of data: time-based model data and GeoJSON data for building choropleth vizualizations.
 
+### Model Data
 The model data must be a CSV document with the following column structure:
 
 - Column One: Key that connects model data to GeoJSON regions.
@@ -29,6 +30,7 @@ Here's an example in table form. Notice how the time series data is saved as col
 | NED | United States | number_phones | 500 | 596 | 795 | ... | 
 | NED | United States | water_usage | 500 | 596 | 795 | ... | 
 
+### GeoJSON Data
 This data is paired with a GeoJSON dataset. GeoJSON data can be found through several sources online, both high and low resolution. Of course, the higher the resolution, the longer the loading time for the tool. There are a couple of key requirements for GeoJSON data format:
 
 - The top-level is a dictionary with two objects: "type" and "features".
@@ -56,7 +58,9 @@ Next, the scale represents how choropleth buckets are determined and chart axes 
 ## Map Details
 The map display on the left is built with Leaflet, with Esri support. The legend on the lower left, is automatically generated and indicates the current choropleth settings. Included is a slider, which allows you to manually explore the changing choropleth values over time. Playback is also supported and allows you to watch the changes over time without manual navigation.
 
-You can select any region that is provided in the map view, which will display individual charts of the data for that specific region over time. Included in this detailed view are charts of other properties included in the model data that aren't the primary property (indicated as Mapped Property in the model data configuration). The details view is also where you can compare the primary model data set to secondary ones, as specified in the MapModelViz configuration.
+You can select any region that is provided in the map view, which will display individual charts of the data for that specific region over time. Included in this detailed view are charts of other properties included in the model data that aren't the primary property. The larger chart is initially set to be what is shown as the choropleth data. If you would like to change this (because you used normalized data for the choropleth and you want to look at overall numbers as the primary large chart, for example), you can edit which charts are displayed and at what size (primary is the larger size and will be displayed on top, secondary is the smaller size and will be displayed underneath any primary charts). 
+
+The details view is also where you can compare the primary model data set to secondary data sets, as specified in the MapModelViz configuration. This allows you to compare, for example, the effects of a policy decision or a different uncertainty setting on trends in data for a specific region. 
 
 ## Advanced MapModelViz Use
 As MapModelViz is freely available on GitHub, it can also be further customized or embedded into your own sites. In this way, you can host static content that is available for anyone to view and interact with. To ease this process, the MapModelViz site hosted on GitHub includes an export function in `Configure MapModelViz` that saves any configuration information as a JSON file, which can be loaded into your own site.
