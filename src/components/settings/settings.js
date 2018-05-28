@@ -30,6 +30,7 @@ var loadOptionalConfigAndSettings = function() {
     console.log("Configuration File Not Found. Continuing without loading one.");
     loadDetails();
     loadSettings();
+    $('#loading-overlay').hide();
   })
 }
 var findChoropleth = function(choroplethString) {

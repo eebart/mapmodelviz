@@ -70,6 +70,7 @@ export function loadMap() {
   basemapLayer("Gray").addTo(map);
   config.map = map;
   // buildChoroplethLegend();
+
 };
 
 export function updateMapData(throughPlayback=false) {
@@ -169,7 +170,8 @@ function updateGeoJSONLayer() {
       else {
         return choroStyle(feature);
       }
-  })
+  });
+  config.map.fitBounds(geoJSONLayer.getBounds());
 };
 
 function getFeatureName() {
@@ -221,8 +223,10 @@ export function addGeoJSONLayer() {
     }
     config.map.addLayer(geoJSONLayer);
     config.map.fitBounds(geoJSONLayer.getBounds());
+    $('#loading-overlay').hide();
   }).fail(function(err) {
     console.error("Error rendering geojson map layer: " + err);
+    $('#loading-overlay').hide();
   });
   // }
 
@@ -286,6 +290,8 @@ function buildChoroplethLegend() {
 };
 
 export function displayPropertyTitle() {
+  showMapContent();
+
   var viewportWidth = $("[id=map-viewport]").width();
   var propTitle = $("#mapped-property-title");
   propTitle.css('width', viewportWidth - 50 * 2);
@@ -299,6 +305,8 @@ export function configureSlider() {
   if (config.timeSeries == null || config.timeSeries.length == 0) {
     return;
   }
+
+  showMapContent();
 
   var slider = $("#slider");
   if (legend) {
@@ -364,6 +372,8 @@ function configurePlayer() {
       playback.show();
     }
   } else {
+    showMapContent();
+
     var thelegend = $( ".legend" );
     var currentTime = $("#current-time");
     var playback = $("#playback-div");
@@ -405,5 +415,13 @@ function configurePlayer() {
     });
     playerConfigured = true;
   }
-
 };
+
+var showMapContent = function(show=true) {
+  var mapContent = $('.map-content');
+  if (show) {
+    mapContent.show();
+  } else {
+    mapContent.hide()
+  }
+}

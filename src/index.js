@@ -17,6 +17,7 @@ var throttled = false;
 var delay = 250;
 
 document.addEventListener('DOMContentLoaded', () => {
+
   loadMap();
   loadOptionalConfigAndSettings();
   configureSlider();
