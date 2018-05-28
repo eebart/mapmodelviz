@@ -6,15 +6,26 @@ var Chart = require('chart.js');
 import { numberWithCommas } from '../../util/util.js';
 
 var detailshtml = require('./details.html');
+var detailsModal = require('./detailsModal.html');
 
 var selectedFeature = null;
 
 export function loadDetails() {
   $("#details-content").html(detailshtml);
+  $("#details-popup").html(detailsModal);
   $("[id=invalid-primary-key]").hide();
   $("[id=no-json-loaded]").show();
   $("[id=no-region-selected]").hide();
   $("[id=region-selected]").hide();
+
+  $('#details-modal').on('show.bs.modal', function (e) {
+    //Setup Editing Details modal
+    buildDetailsModal();
+  });
+
+  $("[id=details-display-save]").click(function() {
+    updateDetailsDisplay();
+  });
 };
 
 export function showJsonLoaded() {
@@ -52,8 +63,8 @@ export function showFeatureDetails(feature) {
 
   $("[id=region-selected]").show();
 
-  showPrimaryChart(feature);
-  showSecondaryCharts(feature);
+  setupDetailsDisplay();
+  displayCharts();
 };
 export function hideFeatureDetails() {
   $("[id=invalid-primary-key]").hide();
@@ -68,6 +79,125 @@ export function updateFeatureDetails() {
     showPrimaryChart(selectedFeature);
     showSecondaryCharts(selectedFeature);
   }
+};
+
+//----------------------------
+// Details Modal
+//----------------------------
+function setupDetailsDisplay() {
+  if(config.activePolicy.detailsDisplay == null) {
+    config.activePolicy.detailsDisplay = {};
+
+    for (var i = 0; i < config.activePolicy.data.length; i++) {
+      var dataset = config.activePolicy.data[i];
+      if (dataset[config.geoAreaId] === undefined || selectedFeature.properties[config.geoAreaId] === undefined) {
+        //Can't match data to the selected region. Don't display.
+      } else if (dataset[config.geoAreaId] === selectedFeature.properties[config.geoAreaId]) {
+        var count = 0;
+        for (var key in dataset) {
+          if (!(Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length)) {
+            //the dataset is bad. Continue.
+            continue;
+          }
+          //not predefined, so build the detials display first.
+          if(key === config.mappedProperty) {
+            config.activePolicy.detailsDisplay[key] = {'key': key, 'index': count, 'value': 'primary'};
+          } else {
+            config.activePolicy.detailsDisplay[key] = {'key': key, 'index': count, 'value': 'secondary'};
+          }
+          count++;
+        }
+        break; // Found the right entry. No need to check more.
+      }
+    }
+  }
+}
+
+function buildDetailsModal() {
+  $("#details-display-form").html('');
+  for (var key in config.activePolicy.detailsDisplay) {
+    var rowHtml = buildRow(config.activePolicy.detailsDisplay[key]);
+    $("#details-display-form").append(rowHtml);
+  }
+};
+var buildRow = function(property) {
+  var divContent = '<div class="row form-group">';
+  divContent += '<div class="col-sm-6" >' + property['key'] + '</div>';
+  divContent += '<div class="col-sm-6" >' + displayButtons(property) + '</div>';
+  divContent += '</div>';
+  return divContent;
+};
+var displayButtons = function(property) {
+  var div = '<div id="' + property['index'] + '_details_display" class="btn-group btn-group-toggle" data-toggle="buttons" style="width:100%;">';
+
+  if (property['value'] === 'primary') {
+    div += buildButton(property['index'],'Primary','active','');
+    div += buildButton(property['index'],'Secondary','','');
+    div += buildButton(property['index'],'Off','','');
+  } else if (property['value'] === 'secondary') {
+    div += buildButton(property['index'],'Primary','','');
+    div += buildButton(property['index'],'Secondary','active','');
+    div += buildButton(property['index'],'Off','','');
+  } else {
+    div += buildButton(property['index'],'Primary','','');
+    div += buildButton(property['index'],'Secondary','','');
+    div += buildButton(property['index'],'Off','active','');
+  }
+  div += '</div>'
+
+  return div;
+}
+var buildButton = function(index, displayType, activeClass, disabledClass) {
+  var checked = '';
+  if (activeClass) {
+    checked = 'checked';
+  }
+  var div = '<label id="' + index + '_details_display_' + displayType.toLowerCase() + '_label" class="btn btn-secondary btn-sm ' + activeClass + ' ' + disabledClass + '">';
+  div +=      '<input type="radio" name="options" id="' + index + '_details_display_' + displayType.toLowerCase() + '" value="' + displayType.toLowerCase() + '" autocomplete="off" ' + checked + '> ' + displayType;
+  div +=    '</label>';
+  return div;
+}
+
+function updateDetailsDisplay() {
+  $("[id=region-selected]").show();
+  $("[id=no-charts-to-chart]").hide();
+
+  for (var key in config.activePolicy.detailsDisplay) {
+    var chart = config.activePolicy.detailsDisplay[key];
+    var id = '#' + config.activePolicy.detailsDisplay[key]['index'] + '_details_display';
+    var active = $(id + ' label.active input');
+    var setting = $(id + ' label.active input').val();
+    config.activePolicy.detailsDisplay[key]['value'] = setting;
+  }
+  displayCharts();
+};
+
+//----------------------------
+// Charting
+//----------------------------
+var displayCharts = function() {
+  var primary = {};
+  var secondary = {};
+  var charted = false;
+  for (var key in config.activePolicy.detailsDisplay) {
+    if (config.activePolicy.detailsDisplay[key]['value'] == 'primary') {
+      charted = true;
+      primary[key] = config.activePolicy.detailsDisplay[key];
+    } else if (config.activePolicy.detailsDisplay[key]['value'] == 'secondary') {
+      charted = true;
+      secondary[key] = config.activePolicy.detailsDisplay[key];;
+    }
+  }
+
+  if (charted) {
+    $("[id=the-detail-charts]").show();
+    $("[id=no-charts-to-chart]").hide();
+  } else {
+    $("[id=the-detail-charts]").hide();
+    $("[id=no-charts-to-chart]").show();
+  }
+  showPrimaryChart(primary);
+  showSecondaryCharts(secondary);
 };
 
 var getFormattedNumber = function(value) {
@@ -183,81 +313,60 @@ var colors = ['rgb(215,2,6)','rgb(240,91,79)','rgb(244,198,61)','rgb(209,121,5)'
               'rgb(221,164,88)','rgb(234,207,125)','rgb(134,121,125)','rgb(178,195,38)',
               'rgb(97,136,226)','rgb(167,72,202)'];
 
-var primaryLineChart = null;
+var primaryCharts = [];
 var secondaryCharts = [];
 
-var showPrimaryChart = function(feature) {
-  //First, find secondary datasets for display
-  var secondary = [];
-  config.jsonData.forEach(function(dataset) {
-    if (dataset.displayStatus === 'secondary') {
-      secondary.push(dataset);
-    }
-  });
+var showPrimaryChart = function(primary) {
+  var chartdata = buildChartData(primary, primaryCharts);
 
-  for (var i = 0; i < config.activePolicy.data.length; i++) {
-    var dataset = config.activePolicy.data[i];
-    if (dataset[config.geoAreaId] === undefined || feature.properties[config.geoAreaId] === undefined) {
-      //Can't match data to the selected region. Don't display charts.
-      showInvalidRegionID();
-      return;
-    }
-    if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
-      var dataVals = [getDataset(config.activePolicy.name,colors[0],dataset[config.mappedProperty])];
-      secondary.forEach(function(secondset, index) {
-        if (secondset.data && secondset.data[i] && secondset.data[i][config.mappedProperty]) {
-          var colorNum = (index+1) % colors.length;
-          var dataset = getDataset(secondset.name, colors[colorNum], secondset.data[i][config.mappedProperty]);
-          dataset.borderDash = [5,5];
-          dataVals.push(dataset);
-        }
-      });
-      if (dataVals[0] !== undefined ) {
-        var data = {
-          labels: config.timeSeries,
-          datasets: dataVals
-        };
-
-        var ctx = $("#primary-chart");
-        if (primaryLineChart) {
-          primaryLineChart.destroy();
-        }
-        var displayLegend = secondary.length > 0;
-        primaryLineChart = new Chart(ctx, {
-          type: 'line',
-          data: data,
-          options: getOptions(config.mappedProperty, displayLegend, config.activePolicy.scale)
-        });
-      }
-      break;
-    }
+  var chartdiv = $('#primary-charts');
+  cleanCharts(primaryCharts, chartdiv)
+  for (var i = 0; i < chartdata.datas.length; i++) {
+    var div = '<div class="col-12 primary-chart">';
+    div += '<canvas id="primary-chart-' + i + '" class="" style="width:400px; height:300px;"></canvas>'
+    div += '</div>'
+    chartdiv.append(div);
   }
-};
 
-var showSecondaryCharts = function(feature) {
+  buildCharts('primary', chartdata, primaryCharts);
+};
+var showSecondaryCharts = function(secondary) {
+  var chartdata = buildChartData(secondary, secondaryCharts);
+
+  var chartdiv = $('#secondary-charts');
+  cleanCharts(secondaryCharts, chartdiv)
+  for (var i = 0; i < chartdata.datas.length; i++) {
+    var div = '<div class="col-lg-6 col-sm-12 secondary-chart">';
+    div += '<canvas id="secondary-chart-' + i + '" class="secondary-chart" width="150" height="200"></canvas>';
+    div += '</div>';
+    chartdiv.append(div);
+  }
+
+  buildCharts('secondary', chartdata, secondaryCharts);
+};
+var buildChartData = function(properties) {
   //First, find secondary datasets for display
-  var secondary = [];
+  var secondaryDatasets = [];
   config.jsonData.forEach(function(dataset) {
     if (dataset.displayStatus === 'secondary') {
-      secondary.push(dataset);
+      secondaryDatasets.push(dataset);
     }
   });
 
-  var series = [];
   var datas = [];
   var options = [];
   for (var i = 0; i < config.activePolicy.data.length; i++) {
     var dataset = config.activePolicy.data[i];
-    if (dataset[config.geoAreaId] === undefined || feature.properties[config.geoAreaId] === undefined) {
+    if (dataset[config.geoAreaId] === undefined || selectedFeature.properties[config.geoAreaId] === undefined) {
       //Can't match data to the selected region. Don't display charts.
     } else {
-      if (dataset[config.geoAreaId] === feature.properties[config.geoAreaId]) {
+      if (dataset[config.geoAreaId] === selectedFeature.properties[config.geoAreaId]) {
         for (var key in dataset) {
-          if (key != config.mappedProperty && Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length) {
+          if (key in properties && Array.isArray(dataset[key]) && dataset[key].length === config.timeSeries.length) {
             var startingColorIdx = Math.floor((Math.random() * colors.length));
             var dataVals = [getDataset(config.activePolicy.name,colors[startingColorIdx],dataset[key])];
 
-            secondary.forEach(function(secondset, index) {
+            secondaryDatasets.forEach(function(secondset, index) {
               if (secondset.data && secondset.data[i] && secondset.data[i][key]) {
                 var colorNum = (index+startingColorIdx+1) % colors.length;
                 var dataset = getDataset(secondset.name, colors[colorNum], secondset.data[i][key]);
@@ -271,7 +380,7 @@ var showSecondaryCharts = function(feature) {
               datasets: dataVals
             };
             datas.push(data);
-            var showLegend = secondary.length > 0;
+            var showLegend = secondaryDatasets.length > 0;
             options.push(getOptions(key, showLegend, config.activePolicy.scale));
           }
         }
@@ -279,31 +388,23 @@ var showSecondaryCharts = function(feature) {
       }
     }
   }
-  secondaryCharts.forEach(function(chart) {
+  return {'datas':datas, 'options':options};
+}
+var cleanCharts = function(charts, chartdiv) {
+  charts.forEach(function(chart) {
     chart.destroy();
   });
-  secondaryCharts = [];
-
-  var charts = $('#secondary-charts');
-  charts.html('');
-
-  var i;
-  for (i = 0; i < datas.length; i++) {
-    var div = '<div class="col-lg-6 col-sm-12 secondary-chart">';
-    // div += '<div class="chart-title-secondary"><div class="chart-title-content">' + datas[i].title + '</div></div>'
-    div += '<canvas id="chart-' + i + '" class="secondary-chart" width="150" height="200"></canvas>';
-    div += '</div>';
-    charts.append(div);
-  }
-
-  for(i = 0; i < datas.length; i++) {
-    var ctx = $('#chart-'+i);
+  charts = [];
+  chartdiv.html('');
+}
+var buildCharts = function(type, chartdata, savedCharts) {
+  for(var i = 0; i < chartdata.datas.length; i++) {
+    var ctx = $('#' + type + '-chart-'+i);
     var newChart = new Chart(ctx, {
       type: 'line',
-      data: datas[i],
-      options: options[i]
+      data: chartdata.datas[i],
+      options: chartdata.options[i]
     });
-    secondaryCharts.push(newChart);
+    savedCharts.push(newChart);
   }
-
-};
+}

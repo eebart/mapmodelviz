@@ -2,17 +2,25 @@
     <span>Please load data.</span>
 </div>
 <div id="no-region-selected" class="center-message" style="display:none;">
-    <span>Please select a region on the map.</span> <span class="caret caret-reversed"></span> 
+    <span>Please select a region on the map.</span> <span class="caret caret-reversed"></span>
 </div>
 <div id="invalid-primary-key" class="center-message" style="display:none;">
     <span>Invalid Geo ID Property provided for primary dataset. Please update configuration.</span>
 </div>
 <div id="region-selected" style="display:none;">
     <div class="details-text">
-        <div class="region-name"><h3 id="region-name"></h3></div>
+        <div class="region-name">
+            <h3 id="region-name"></h3>
+        </div>
+        <a class="selectable right-top" id="edit-model-details" data-toggle="modal" data-target="#details-modal">
+            <img class="icon-pencil" src="img/pencil.png"></img>
+        </a>
     </div>
-    <div class="">
-        <div class="primary-chart">
+    <div id="no-charts-to-chart" class="centered-chart-message" style="display:none;">
+        <span>No data is being actively chartted in the details pane. Click the pencil to change this.</span>
+    </div>
+    <div id='the-detail-charts' class="">
+        <div class="primary-chart" id="primary-charts">
             <canvas id="primary-chart" class="" style="width:400px; height:300px;"></canvas>
         </div>
         <div id="secondary-charts" class="row">
@@ -20,3 +28,5 @@
     </div>
 
 </div>
+
+<div id="details-popup"></div>

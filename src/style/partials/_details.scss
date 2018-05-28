@@ -6,8 +6,22 @@
     text-align: center;
   }
 
+  .centered-chart-message {
+    width:100%;
+    @extend .centered-content;
+    text-align: center;
+    flex: 1 1 auto;
+  }
+
+  #region-selected {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+  }
+
   .details-text {
     padding-bottom:10px;
+    flex: 0 1 auto;
   }
 
   .charts {
@@ -31,6 +45,12 @@
     width:100%;
     text-align: center;
     font-size:0.8em;
+  }
+
+  #details-modal {
+    .btn {
+      width:100%;
+    }
   }
 
   .chart-title-secondary {

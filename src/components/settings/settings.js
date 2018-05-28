@@ -95,10 +95,10 @@ var loadSettings = function() {
   /***********************
    * Model Name Stuff
    ***********************/
-  displayModelName(config.modelName);
-  $("[id=name-change-save]").click(function() {
-    saveModelName();
-  });
+  // displayModelName(config.modelName);
+  // $("[id=name-change-save]").click(function() {
+  //   saveModelName();
+  // });
 
   /***********************
    * Main Page Model Datasets
@@ -265,7 +265,7 @@ var addModelDataRow = function(newDataset) {
 };
 var buildRow = function(dataset, index) {
   var divContent = '<tr>';
-  divContent += '<td style="vertical-align:middle;">' + dataset.name + '</td>';
+  divContent += '<td id="' + index + '_propname" style="vertical-align:middle;">' + dataset.name + '</td>';
   divContent += '<td>' + displayButtons(dataset, index) + '</td>';
   divContent += '</tr>';
   return divContent;
@@ -472,7 +472,7 @@ var saveModelDetails_OK = function() {
   if (openDataset.displayStatus !== displayStatus || openDataset.scale !== scale) {
     for (var i = 0; i < config.jsonData.length; i++) {
       if (config.jsonData[i].name === openDataset.name) {
-        selectDisplayButton(i,displayStatus);
+        selectDisplayButton(i, openDataset.name, displayStatus);
         updateDatasetDisplay(i,displayStatus, openDataset.scale == scale);
         return;
       }
@@ -529,7 +529,7 @@ var saveModelDetails = function() {
   if (changed) {
     for (var i = 0; i < config.jsonData.length; i++) {
       if (config.jsonData[i].name === openDataset.name) {
-        selectDisplayButton(i,displayStatus);
+        selectDisplayButton(i, openDataset.name, displayStatus);
         updateDatasetDisplay(i,displayStatus, scaleChanged);
         return;
       }
@@ -577,7 +577,7 @@ var buildDataset = function() {
   return newDataset;
 
 }
-var selectDisplayButton = function(index, displayStatus) {
+var selectDisplayButton = function(index, displayName, displayStatus) {
   $('#' + index + '_display_' + 'primary' + '_label').removeClass("active");
   $('#' + index + '_display_' + 'primary').checked = false;
   $('#' + index + '_display_' + 'secondary' + '_label').removeClass("active");
@@ -588,6 +588,7 @@ var selectDisplayButton = function(index, displayStatus) {
   $('#' + index + '_display_' + displayStatus + '_label').addClass("active");
   $('#' + index + '_display_' + displayStatus).checked = true;
 
+  $('#' + index + '_propname').html(displayName);
 };
 
 // Select a new active policy from the main settings window
@@ -614,7 +615,7 @@ var updateDatasetDisplay = function(clickedIndex, displayStatus, scaleChanged=fa
 
           $('#' + index + '_display_secondary_label').removeClass("disabled");
           $('#' + index + '_display_off_label').removeClass("disabled");
-          selectDisplayButton(index, 'off');
+          selectDisplayButton(index, dataset.name, 'off');
         }
       }
     } else {
@@ -810,7 +811,9 @@ var saveConfigAsFile = function() {
     delete dataset.data;
     delete dataset.timeseries;
   });
-  savedConfig.allowFileUpload = $("[id=allow-file-change]").hasClass('active');
+  var editable = $('#allow-file-change label.active input').val();
+  savedConfig.allowFileUpload = editable == 'Yes';
+  debugger;
 
   var textToWrite = JSON.stringify(savedConfig);
   var textFileAsBlob = new Blob([textToWrite], { type: 'text/json' });

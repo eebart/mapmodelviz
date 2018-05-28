@@ -5190,7 +5190,7 @@ a.text-dark:hover, a.text-dark:focus {
   background: #007bff;
   cursor: pointer; }
 
-.centered-content, .model-detail .center-message {
+.centered-content, .model-detail .center-message, .model-detail .centered-chart-message {
   display: flex;
   align-items: center;
   justify-content: center; }
@@ -5270,6 +5270,10 @@ a.text-dark:hover, a.text-dark:focus {
     overflow: auto; }
   .info-view .selectable {
     cursor: pointer; }
+  .info-view .right-top {
+    position: absolute;
+    top: 20px;
+    right: 20px; }
   .info-view .icon-pencil {
     width: 20px;
     height: 20px; }
@@ -5337,8 +5341,19 @@ a.text-dark:hover, a.text-dark:focus {
   height: 100%;
   text-align: center; }
 
+.model-detail .centered-chart-message {
+  width: 100%;
+  text-align: center;
+  flex: 1 1 auto; }
+
+.model-detail #region-selected {
+  display: flex;
+  flex-flow: column;
+  height: 100%; }
+
 .model-detail .details-text {
-  padding-bottom: 10px; }
+  padding-bottom: 10px;
+  flex: 0 1 auto; }
 
 .model-detail .charts {
   padding: 10px; }
@@ -5357,6 +5372,9 @@ a.text-dark:hover, a.text-dark:focus {
   width: 100%;
   text-align: center;
   font-size: 0.8em; }
+
+.model-detail #details-modal .btn {
+  width: 100%; }
 
 .model-detail .chart-title-secondary {
   display: flex; }
