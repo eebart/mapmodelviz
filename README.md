@@ -39,7 +39,7 @@ This data is paired with a GeoJSON dataset. GeoJSON data can be found through se
 
 Most of what is described is standard GeoJSON format. The ID *must* belong to the "properties" object, as described.
 
-#### Data Preparation
+### Data Preparation
 Though there will almost always be work that is specific to each case, a notebook has been included that prepares the proper formats for both model and GeoJSON data as a starting point. See the `data_preparation\` folder of this repository.
 
 ## Basic MapModelViz Use
@@ -55,7 +55,7 @@ The last three properties, color scheme, scale, and data display control configu
 
 Next, the scale represents how choropleth buckets are determined and chart axes are calculated with: linear or logorithmic. Finally, the data display property determines which configured model data is displayed in the choropleth (through Primary) and which are displayed in specific region-based charts in the details pane (Secondary). Multiple model data sets can be considered secondary, which allows you to potentially compare multiple policy options. However, only one model data set can be Primary at a time, as this is what determines what is displayed in the map on the left.
 
-## Map Details
+### Map Details
 The map display on the left is built with Leaflet, with Esri support. The legend on the lower left, is automatically generated and indicates the current choropleth settings. Included is a slider, which allows you to manually explore the changing choropleth values over time. Playback is also supported and allows you to watch the changes over time without manual navigation.
 
 You can select any region that is provided in the map view, which will display individual charts of the data for that specific region over time. Included in this detailed view are charts of other properties included in the model data that aren't the primary property. The larger chart is initially set to be what is shown as the choropleth data. If you would like to change this (because you used normalized data for the choropleth and you want to look at overall numbers as the primary large chart, for example), you can edit which charts are displayed and at what size (primary is the larger size and will be displayed on top, secondary is the smaller size and will be displayed underneath any primary charts). 
