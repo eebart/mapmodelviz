@@ -63,9 +63,11 @@ You can select any region that is provided in the map view, which will display i
 The details view is also where you can compare the primary model data set to secondary data sets, as specified in the MapModelViz configuration. This allows you to compare, for example, the effects of a policy decision or a different uncertainty setting on trends in data for a specific region. 
 
 ## Advanced MapModelViz Use
-As MapModelViz is freely available on GitHub, it can also be further customized or embedded into your own sites. In this way, you can host static content that is available for anyone to view and interact with. To ease this process, the MapModelViz site hosted on GitHub includes an export function in `Configure MapModelViz` that saves any configuration information as a JSON file, which can be loaded into your own site.
+As MapModelViz is freely available on GitHub, it can also be further customized or embedded into your own sites. In this way, you can host static content that is made available for anyone to view and interact with. To ease this process, the MapModelViz site hosted on GitHub includes an export function in `Configure MapModelViz` that saves any configuration information as a properly structured JSON file, which can be loaded into your own site.
 
-First, fork and download MapModelViz to your machine. Include your exported `config.json` file (the configuration file must use this name), and relevant model data (CSV) and geoJSON files in the `src/assets/` folder of your own MapModelViz. This tool is configured with npm and WebPack, a common JavaScript bundler. Already included are a few essential commands for building and running MapModelViz:
+First, fork and download MapModelViz to your machine. Include your exported `config.json` file (the configuration file must use this name), and relevant model data (CSV) and geoJSON files in the `src/assets/` folder of your own MapModelViz.  This tool is configured with npm and WebPack, a common JavaScript bundler. 
+
+To prepare the tool for building and publishing, simply run `npm install` to download the require packages. Then, `package.json` already includes a few essential pre-configured commands for building and running MapModelViz:
 
 - `npm start`: Spins up a development server and watches for local changes as you customize MapModelViz
 - `npm run build:dev` and `npm run build:prod`: Builds development and production distributions of MapModelViz that can be hosted on a simple http server.
