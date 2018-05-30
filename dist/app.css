@@ -5281,7 +5281,7 @@ a.text-dark:hover, a.text-dark:focus {
 #loading-overlay {
   width: 100%;
   height: 100%;
-  background-color: #DDDDDD;
+  background-color: #D0CFD4;
   z-index: 1050;
   position: absolute;
   -moz-border-radius: 10px;
@@ -5448,31 +5448,34 @@ a.text-dark:hover, a.text-dark:focus {
   0% {
     background-color: #00a8d6; }
   100% {
-    background-color: #dddddd; } }
+    background-color: #d0cfd4; } }
 
 @-o-keyframes fadeG {
   0% {
     background-color: #00a8d6; }
   100% {
-    background-color: #dddddd; } }
+    background-color: #d0cfd4; } }
 
 @-ms-keyframes fadeG {
   0% {
     background-color: #00a8d6; }
   100% {
-    background-color: #dddddd; } }
+    background-color: #d0cfd4; } }
 
 @-webkit-keyframes fadeG {
   0% {
     background-color: #00a8d6; }
   100% {
-    background-color: #dddddd; } }
+    background-color: #d0cfd4; } }
 
 @-moz-keyframes fadeG {
   0% {
     background-color: #00a8d6; }
   100% {
-    background-color: #dddddd; } }
+    background-color: #d0cfd4; } }
+
+.map-view .leaflet-container {
+  background: #D0CFD4; }
 
 .map-view .viewport {
   position: relative; }
@@ -5536,6 +5539,14 @@ a.text-dark:hover, a.text-dark:focus {
   width: 100%;
   height: 100%;
   text-align: center; }
+
+.model-detail .leaflet-bar {
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-shadow: none; }
+
+.model-detail .edit-img {
+  background-image: url(img/pencilbw.png);
+  background-size: 16px 16px; }
 
 .model-detail .centered-chart-message {
   width: 100%;

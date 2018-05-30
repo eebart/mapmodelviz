@@ -6,6 +6,16 @@
     text-align: center;
   }
 
+  .leaflet-bar {
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    box-shadow: none;
+  }
+
+  .edit-img {
+    background-image: url(img/pencilbw.png);
+    background-size: 16px 16px;
+  }
+
   .centered-chart-message {
     width:100%;
     @extend .centered-content;

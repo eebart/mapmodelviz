@@ -2,7 +2,9 @@
 // require('chartist-plugin-tooltip');
 
 var Chart = require('chart.js');
+var JSZip = require("jszip");
 
+import {saveAs} from 'file-saver';
 import { numberWithCommas } from '../../util/util.js';
 
 var detailshtml = require('./details.html');
@@ -22,6 +24,10 @@ export function loadDetails() {
     //Setup Editing Details modal
     buildDetailsModal();
   });
+
+  $('#print-model-details').click(function() {
+    saveChartsToDisk();
+  })
 
   $("[id=details-display-save]").click(function() {
     updateDetailsDisplay();
@@ -328,7 +334,7 @@ var showPrimaryChart = function(primary) {
     chartdiv.append(div);
   }
 
-  buildCharts('primary', chartdata, primaryCharts);
+  primaryCharts = buildCharts('primary', chartdata);
 };
 var showSecondaryCharts = function(secondary) {
   var chartdata = buildChartData(secondary, secondaryCharts);
@@ -342,7 +348,7 @@ var showSecondaryCharts = function(secondary) {
     chartdiv.append(div);
   }
 
-  buildCharts('secondary', chartdata, secondaryCharts);
+  secondaryCharts = buildCharts('secondary', chartdata);
 };
 var buildChartData = function(properties) {
   //First, find secondary datasets for display
@@ -396,8 +402,9 @@ var cleanCharts = function(charts, chartdiv) {
   });
   charts = [];
   chartdiv.html('');
-}
-var buildCharts = function(type, chartdata, savedCharts) {
+};
+var buildCharts = function(type, chartdata) {
+  var savedCharts = [];
   for(var i = 0; i < chartdata.datas.length; i++) {
     var ctx = $('#' + type + '-chart-'+i);
     var newChart = new Chart(ctx, {
@@ -407,4 +414,31 @@ var buildCharts = function(type, chartdata, savedCharts) {
     });
     savedCharts.push(newChart);
   }
+  return savedCharts;
 }
+
+function callback(title, blob) {
+  var filename = title + '.png';
+  saveAs(blob, filename);
+};
+var saveChartsToDisk = function() {
+  var toSave = [];
+  for(var i = 0; i < primaryCharts.length; i++) {
+    var chart = primaryCharts[i];
+    var name = 'primary_' + chart.options.title.text.replace(' ','') + '.png';
+    toSave.push({'filename': name, 'imgUrl': chart.canvas.toDataURL()});
+  }
+  for(var j = 0; j < secondaryCharts.length; j++) {
+    var chart = secondaryCharts[j];
+    var name = 'secondary_' + chart.options.title.text.replace(' ','') + '.png';
+    toSave.push({'filename': name, 'imgUrl': chart.canvas.toDataURL()});
+  }
+
+  var zip = new JSZip();
+  for(var k = 0; k < toSave.length; k++) {
+    zip.file(toSave[k]['filename'], toSave[k]['imgUrl'].split('base64,')[1], {base64: true});
+  }
+  zip.generateAsync({type:"blob"}).then(function(content) {
+      saveAs(content, "mapmodelviz_" + selectedFeature.properties[config.geoTextProperty] + "_charts.zip");
+  });
+};

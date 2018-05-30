@@ -10,11 +10,19 @@
 <div id="region-selected" style="display:none;">
     <div class="details-text">
         <div class="region-name">
-            <h3 id="region-name"></h3>
+            <h3 id="region-name">
+            <a class="leaflet-control-easyPrint-button-export" style="border-top-right-radius: 2px; border-bottom-right-radius: 2px;"></a>
+            </h3>
         </div>
-        <a class="selectable right-top" id="edit-model-details" data-toggle="modal" data-target="#details-modal">
-            <img class="icon-pencil" src="img/pencil.png"></img>
-        </a>
+        <div class="right-top">
+
+            <div class="leaflet-control-easyPrint leaflet-bar leaflet-control">
+                <a class="selectable edit-img" id="edit-model-details" title="Edit Details Display" data-toggle="modal" data-target="#details-modal">
+                </a>
+                <a class="leaflet-control-easyPrint-button-export" id="print-model-details" title="Save All Charts">
+                </a>
+            </div>
+        </div>
     </div>
     <div id="no-charts-to-chart" class="centered-chart-message" style="display:none;">
         <span>No data is being actively chartted in the details pane. Click the pencil to change this.</span>

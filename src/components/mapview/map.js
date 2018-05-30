@@ -1,6 +1,7 @@
 import * as util from '../../util/util.js';
 import * as details from '../details/details.js';
-import * as L from 'leaflet';
+import L from 'leaflet';
+import 'leaflet-easyprint';
 import { basemapLayer } from 'esri-leaflet';
 
 var geoJSONLayer,
@@ -69,8 +70,14 @@ export function loadMap() {
   var map = L.map('map').setView([52.0024612, 4.3668409], 7);
   basemapLayer("Gray").addTo(map);
   config.map = map;
-  // buildChoroplethLegend();
 
+  L.easyPrint({
+  	title: 'Print Map',
+  	// position: 'topleft',
+  	sizeModes: ['Current', 'A4Portrait', 'A4Landscape'],
+    exportOnly: true,
+    filename: 'mapmodelviz_choroplethMap.png'
+  }).addTo(map);
 };
 
 export function updateMapData(throughPlayback=false) {
