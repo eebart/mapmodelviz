@@ -1,0 +1,69 @@
+<head><link href="app.css" rel="stylesheet"></head>
+<div id="main-message" class="message">
+</div>
+
+<div class="main" >
+
+    <div class="row" style="margin-left:0px; margin-right:0px;">
+        <div class="col-12 col-md-6 col-lg-7 section map-view">
+            <div id="map-viewport" class="viewport">
+                <div id="loading-overlay" style="">
+                    <div id="floatingBarsG">
+                        <div class="blockG" id="rotateG_01"></div>
+                        <div class="blockG" id="rotateG_02"></div>
+                        <div class="blockG" id="rotateG_03"></div>
+                        <div class="blockG" id="rotateG_04"></div>
+                        <div class="blockG" id="rotateG_05"></div>
+                        <div class="blockG" id="rotateG_06"></div>
+                        <div class="blockG" id="rotateG_07"></div>
+                        <div class="blockG" id="rotateG_08"></div>
+                    </div>
+                </div>
+
+                <div class="map-content" style="display:none;">
+                    <div id="mapped-property-title" style="display:none;">
+                    </div>
+                </div>
+                <div id="map" class="map">
+                </div>
+                <div class="map-content" style="display:none;">
+                    <div id="playback-div" style="display:none;">
+                        <button type="button" id="run-playback" class="btn btn-primary btn-sm">
+                            Play
+                        </button>
+                    </div>
+                    <div id="current-time" style="display:none;">
+                        Current Time: <span id="current-time-val"></span>
+                    </div>
+                    <div id="slider" style="display:none;">
+                        <div class="slide-container">
+                            <input type="range" min="1" max="100" value="50" class="slider" id="the-slider">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-5 section info-view">
+            <div class="model-detail">
+                <!-- <div class="model-title">
+                    <a class="selectable" id="edit-model-name" data-toggle="modal" data-target="#name-modal">
+                        <img class="icon-pencil float-right" src="img/pencil.png"></img>
+                        <h1 id="model-name"></h1>
+                    </a>
+                </div> -->
+                <div class="viewport">
+                    <!-- <div class="info-title"></div> -->
+                    <div id="details-content" class="info-content"></div>
+                </div>
+
+                <div id="settings-content" class="settings-content"></div>
+            </div>
+            <!-- <div class="settings-detail">
+                    <!-- <div class="viewport"> -->
+                        <!-- <div class="info-title"></div> -->
+                    <!-- </div> -->
+            <!-- </div> -->
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="app.bundle.js"></script>
