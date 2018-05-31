@@ -814,7 +814,6 @@ var saveConfigAsFile = function() {
   });
   var editable = $('#allow-file-change label.active input').val();
   savedConfig.allowFileUpload = editable == 'Yes';
-  debugger;
 
   var textToWrite = JSON.stringify(savedConfig);
   var textFileAsBlob = new Blob([textToWrite], { type: 'text/json' });

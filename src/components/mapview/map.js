@@ -299,11 +299,18 @@ function buildChoroplethLegend() {
 export function displayPropertyTitle() {
   showMapContent();
 
+  var name = '';
+  if (config === null || config.activePolicy === null || config.activePolicy.name === null) {
+    name = '';
+  } else {
+    name = config.activePolicy.name;
+  }
+
   var viewportWidth = $("[id=map-viewport]").width();
   var propTitle = $("#mapped-property-title");
   propTitle.css('width', viewportWidth - 50 * 2);
   propTitle.css('left', 50);
-  propTitle.html('<h3>' + config.activePolicy.name + '</h3>');
+  propTitle.html('<h3>' + name + '</h3>');
   propTitle.show();
 };
 
