@@ -656,7 +656,7 @@ var loadModelData = function() {
         if (dataset.displayStatus === 'secondary') {
           var url = dataset.file.url;
           if (!url || url === '') {
-            url = URL.createObjectURL(dataset.file);
+            url = (window.URL ? URL : webkitURL).createObjectURL(dataset.file);
           }
           loadCSVData(dataset, url, false);
         }
@@ -674,7 +674,7 @@ var loadModelData = function() {
 
   var url = config.activePolicy.file.url;
   if (!url || url === '') {
-    url = URL.createObjectURL(config.activePolicy.file);
+    url = (window.URL ? URL : webkitURL).createObjectURL(config.activePolicy.file);
   }
   loadCSVData(config.activePolicy, url, true);
 };
@@ -809,6 +809,12 @@ var saveConfigAsFile = function() {
     activePolicyName: config.activePolicy.name
   };
   savedConfig.jsonData.forEach(function(dataset) {
+    if (dataset.file.url === undefined) {
+      dataset.file = {'name': dataset.file.name, 'url':'assets/' + dataset.file.name}
+    }
+    if (dataset.geoJSON.file.url === undefined) {
+      dataset.geoJSON.file = {'name': dataset.geoJSON.file.name, 'url':'assets/' + dataset.geoJSON.file.name}
+    }
     delete dataset.data;
     delete dataset.timeseries;
   });
@@ -831,7 +837,7 @@ var saveConfigAsFile = function() {
   window.URL = window.URL || window.webkitURL;
 
   // Create the link Object.
-  downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+  downloadLink.href = (window.URL ? URL : webkitURL).createObjectURL(textFileAsBlob);
   // when link is clicked call a function to remove it from
   // the DOM in case user wants to save a second file.
   downloadLink.onclick = destroyClickedElement;
