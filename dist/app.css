@@ -5685,7 +5685,7 @@ svg.ct-chart-bar, svg.ct-chart-line {
   height: 100%; }
   .choropleth-display .row {
     width: 100%;
-    height: 100%;
+    height: 35px;
     margin: 0px; }
     .choropleth-display .row .col {
       padding: 0px; }
