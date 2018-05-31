@@ -3,7 +3,7 @@
   "allowFileUpload": true,
   "activePolicyName": "Energy Demand",
 
-  "playbackSpeed": 500,
+  "playbackSpeed": 1000,
 
   "jsonData": [{
     "name": "Energy Demand",

@@ -18,6 +18,7 @@ var modelConfig =  {
     max: Infinity
   },
   choroplethRanges: [],
+  playbackSpeed: 1000,
 
   map: null
 };
