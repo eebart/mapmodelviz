@@ -76,7 +76,7 @@ export function loadMap() {
   	// position: 'topleft',
   	sizeModes: ['Current', 'A4Portrait', 'A4Landscape'],
     exportOnly: true,
-    filename: 'mapmodelviz_choroplethMap.png'
+    filename: 'mapmodelviz_choroplethMap'
   }).addTo(map);
 };
 
@@ -280,8 +280,8 @@ function buildChoroplethLegend() {
     for (var i = 0; i < config.choropleth.length; i++) {
       var lower = config.choroplethRanges[i];
       var upper = config.choroplethRanges[i + 1];
-      var lowerStr = buildNumString(lower);
-      var upperStr = buildNumString(upper);
+      var lowerStr = lower.toExponential(2);
+      var upperStr = upper.toExponential(2);
 
       if (upper > 10 && lower <=1) {
         lowerStr = util.numberWithCommas(Math.round(lower * 100) / 100);
@@ -326,23 +326,25 @@ export function configureSlider() {
   if (legend) {
     // var legendRight = parseInt($( ".legend" )[0].css('right').slice(0, -2));
     var thelegend = $( ".legend" );
-    var legendWidth = thelegend.width();
+    var legendWidth = thelegend.outerWidth();
     var viewportWidth = $("[id=map-viewport]").width();
-    var sliderLeft = legendWidth + 30;
+    var sliderLeft = legendWidth + 15;
     var sliderWidth = viewportWidth - sliderLeft - 15;
     slider.css('width', sliderWidth + 'px');
     slider.css('left', sliderLeft + 'px');
 
     var currentTime = $("#current-time");
-    var legendHeight = thelegend.height();
-    currentTime.css('width', legendWidth + 10 + 2);
+    var legendHeight = thelegend.outerHeight();
+    currentTime.css('width', legendWidth);
     currentTime.css('left', thelegend.css('margin-left'));
-    currentTime.css('bottom', legendHeight + 5 + 10 + 2 + 10);
+    currentTime.css('bottom', legendHeight + 5 + 10 );
+    currentTime.height('auto');
   } else {
     var currentTime = $("#current-time");
     currentTime.css('width', 160);
     currentTime.css('left', 10);
     currentTime.css('bottom', 10 + 2 + 10);
+    currentTime.height('auto');
 
     var viewportWidth = $("[id=map-viewport]").width();
     var sliderLeft = 15
@@ -359,11 +361,13 @@ export function configureSlider() {
 
   $("[id=slider]").show();
   $("#current-time").show();
+
 };
 export function updateSlider() {
   if ($("[id=slider]").is(":visible") ) {
     document.getElementById('the-slider').value = config.timeSeries[config.currentIndex]
     $('#current-time-val').html(config.timeSeries[config.currentIndex]);
+    $("#playback-div").css('bottom', $( ".legend" ).outerHeight(true) + 5 + $("#current-time").outerHeight(true) + 5); // +10+2 is the padding and border for elements. +5 is margin between
   }
 };
 
@@ -380,9 +384,10 @@ function configurePlayer() {
       var thelegend = $( ".legend" );
       var currentTime = $("#current-time");
       var playback = $("#playback-div");
-      playback.css('width', thelegend.width() + 10 + 2);
+      console.log(currentTime.outerHeight(true))
+      playback.css('width', thelegend.outerWidth());
       playback.css('left', thelegend.css('margin-left'));
-      playback.css('bottom', thelegend.height() + 5 + 10 + 2 + 10 + currentTime.height() + 10 + 2 + 5); // +10+2 is the padding and border for elements. +5 is margin between
+      playback.css('bottom', thelegend.outerHeight(true) + 5 + currentTime.outerHeight(true) + 5); // +10+2 is the padding and border for elements. +5 is margin between
       playback.show();
     }
   } else {
@@ -391,9 +396,9 @@ function configurePlayer() {
     var thelegend = $( ".legend" );
     var currentTime = $("#current-time");
     var playback = $("#playback-div");
-    playback.css('width', thelegend.width() + 10 + 2);
+    playback.css('width', thelegend.outerWidth());
     playback.css('left', thelegend.css('margin-left'));
-    playback.css('bottom', thelegend.height() + 5 + 10 + 2 + 10 + currentTime.height() + 10 + 2 + 5); // +10+2 is the padding and border for elements. +5 is margin between
+    playback.css('bottom', thelegend.outerHeight(true) + 5 + currentTime.outerHeight(true) + 5); // +10+2 is the padding and border for elements. +5 is margin between
     playback.show();
 
     $('#run-playback').on("click", function(event) {

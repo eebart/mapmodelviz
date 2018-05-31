@@ -49,12 +49,20 @@
   background-color: $input-disabled-bg;
 }
 
+#color-select-add {
+  .choropleth-display {
+    .row{
+      height:35px;
+    }
+
+  }
+}
 .choropleth-display {
   width:100%;
   height:100%;
   .row{
     width:100%;
-    height:35px;
+    height:100%;
     margin:0px;
     .col {
       padding:0px;

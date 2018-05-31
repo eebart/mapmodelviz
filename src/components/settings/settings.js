@@ -651,15 +651,14 @@ var loadModelData = function() {
       var dataset = config.jsonData[i];
       if (dataset.name === config.activePolicyName) {
         config.activePolicy = dataset;
-        break;
-      } else {
-        if (dataset.displayStatus === 'secondary') {
-          var url = dataset.file.url;
-          if (!url || url === '') {
-            url = (window.URL ? URL : webkitURL).createObjectURL(dataset.file);
-          }
-          loadCSVData(dataset, url, false);
+        // break;
+      }
+      if (dataset.displayStatus === 'secondary') {
+        var url = dataset.file.url;
+        if (!url || url === '') {
+          url = (window.URL ? URL : webkitURL).createObjectURL(dataset.file);
         }
+        loadCSVData(dataset, url, false);
       }
     }
     if (config.activePolicy === null) {
