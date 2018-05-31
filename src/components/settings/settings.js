@@ -625,7 +625,7 @@ var updateDatasetDisplay = function(clickedIndex, displayStatus, scaleChanged=fa
         if (displayStatus === 'secondary') {
           var url = dataset.file.url;
           if (!url || url === '') {
-            url = URL.createObjectURL(dataset.file);
+            url = (window.URL ? URL : webkitURL).createObjectURL(dataset.file);
           }
           loadCSVData(dataset, url, false);
         } else {
