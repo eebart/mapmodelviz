@@ -5499,7 +5499,7 @@ a.text-dark:hover, a.text-dark:focus {
 .map-view #mapped-property-title {
   position: absolute;
   top: 10px;
-  overflow-x: hidden;
+  overflow-x: scroll;
   z-index: 1001;
   text-align: center;
   font-weight: bold; }
