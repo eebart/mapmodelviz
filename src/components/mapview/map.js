@@ -67,7 +67,9 @@ var getFillColor = function(feature) {
 
 export function loadMap() {
   // A new map here
-  var map = L.map('map').setView([52.0024612, 4.3668409], 7);
+  var map = L.map('map', {
+    zoomSnap: 0.25
+  }).setView([52.0024612, 4.3668409], 7);
   basemapLayer("Gray").addTo(map);
   config.map = map;
 
@@ -230,6 +232,7 @@ export function addGeoJSONLayer() {
     }
     config.map.addLayer(geoJSONLayer);
     config.map.fitBounds(geoJSONLayer.getBounds());
+    map.setZoom(1);
     $('#loading-overlay').hide();
   }).fail(function(err) {
     console.error("Error rendering geojson map layer: " + err);
