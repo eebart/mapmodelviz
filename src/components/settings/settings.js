@@ -807,6 +807,23 @@ var saveConfigAsFile = function() {
     jsonData: config.jsonData,
     activePolicyName: config.activePolicy.name
   };
+  for (var i = 0; i < savedConfig.jsonData.length; i++) {
+    if (savedConfig.jsonData[i].file.url === undefined) {
+      savedConfig.jsonData[i].file = {
+        'name': savedConfig.jsonData[i].file.name,
+        'url':'assets/' + savedConfig.jsonData[i].file.name
+      }
+    }
+    if (savedConfig.jsonData[i].geoJSON.file.url === undefined) {
+      savedConfig.jsonData[i].geoJSON.file = {
+        'name': savedConfig.jsonData[i].geoJSON.file.name,
+        'url':'assets/' + savedConfig.jsonData[i].geoJSON.file.name
+      }
+    }
+    delete savedConfig.jsonData[i].data;
+    delete savedConfig.jsonData[i].timeSeries;
+    delete savedConfig.jsonData[i].detailsDisplay;
+  }
   savedConfig.jsonData.forEach(function(dataset) {
     if (dataset.file.url === undefined) {
       dataset.file = {'name': dataset.file.name, 'url':'assets/' + dataset.file.name}
@@ -816,6 +833,7 @@ var saveConfigAsFile = function() {
     }
     delete dataset.data;
     delete dataset.timeseries;
+    delete dataset.detailsDisplay;
   });
   var editable = $('#allow-file-change label.active input').val();
   savedConfig.allowFileUpload = editable == 'Yes';

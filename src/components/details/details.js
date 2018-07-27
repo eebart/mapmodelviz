@@ -82,8 +82,7 @@ export function hideFeatureDetails() {
 };
 export function updateFeatureDetails() {
   if (selectedFeature) {
-    showPrimaryChart(selectedFeature);
-    showSecondaryCharts(selectedFeature);
+    displayCharts();
   }
 };
 

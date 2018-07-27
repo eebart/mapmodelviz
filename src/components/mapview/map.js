@@ -232,7 +232,7 @@ export function addGeoJSONLayer() {
     }
     config.map.addLayer(geoJSONLayer);
     config.map.fitBounds(geoJSONLayer.getBounds());
-    map.setZoom(1);
+    // map.setZoom(1);
     $('#loading-overlay').hide();
   }).fail(function(err) {
     console.error("Error rendering geojson map layer: " + err);

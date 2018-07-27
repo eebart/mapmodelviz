@@ -33,7 +33,7 @@
     "geoAreaId": "id",
     "mappedProperty": "total dom energy demand",
     "choroplethString": "GnBu[5]",
-    "displayStatus": "off",
+    "displayStatus": "secondary",
     "geoJSON": {
       "file": {
         "name": "countries.geojson",
@@ -51,7 +51,7 @@
     "geoAreaId": "id",
     "mappedProperty": "total dom energy demand",
     "choroplethString": "GnBu[5]",
-    "displayStatus": "off",
+    "displayStatus": "secondary",
     "geoJSON": {
       "file": {
         "name": "countries.geojson",
