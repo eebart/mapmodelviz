@@ -1,0 +1,81 @@
+{
+  "modelName": "World Test Model",
+  "allowFileUpload": true,
+  "activePolicyName": "Energy Demand",
+
+  "playbackSpeed": 1000,
+
+  "jsonData": [{
+    "name": "Energy Demand",
+    "scale": "linear",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "id",
+    "mappedProperty": "total dom energy demand",
+    "choroplethString": "GnBu[5]",
+    "displayStatus": "primary",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/lowrescountries.geojson"
+      },
+      "text": "name"
+    }
+  },{
+    "name": "Energy Demand Multiplied",
+    "scale": "linear",
+    "file": {
+      "name": "multiplied.csv",
+      "url": "assets/multiplied.csv"
+    },
+    "geoAreaId": "id",
+    "mappedProperty": "total dom energy demand",
+    "choroplethString": "GnBu[5]",
+    "displayStatus": "secondary",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/lowrescountries.geojson"
+      },
+      "text": "name"
+    }
+  },{
+    "name": "Energy Demand Doubled",
+    "scale": "logarithmic",
+    "file": {
+      "name": "doubled.csv",
+      "url": "assets/doubled.csv"
+    },
+    "geoAreaId": "id",
+    "mappedProperty": "total dom energy demand",
+    "choroplethString": "GnBu[5]",
+    "displayStatus": "secondary",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/lowrescountries.geojson"
+      },
+      "text": "name"
+    }
+  },{
+    "name": "Renewables",
+    "scale": "linear",
+    "file": {
+      "name": "worlddata.csv",
+      "url": "assets/worlddata.csv"
+    },
+    "geoAreaId": "id",
+    "mappedProperty": "pc renewables consumption of total energy consumption",
+    "choroplethString": "RdPu[7]",
+    "displayStatus": "off",
+    "geoJSON": {
+      "file": {
+        "name": "countries.geojson",
+        "url": "assets/lowrescountries.geojson"
+      },
+      "text": "name"
+    }
+  }]
+}
